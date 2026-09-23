@@ -31,7 +31,8 @@ import {
   Cpu,
   Terminal,
   Lock,
-  Loader2
+  Loader2,
+  Trophy
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
@@ -41,6 +42,7 @@ export default function JudgeEvaluationWorkspacePage() {
   const { user } = useAuth();
 
   const [team, setTeam] = useState<Team | null>(null);
+  const [hackathonName, setHackathonName] = useState<string>("");
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [rubric, setRubric] = useState<Rubric | null>(null);
   const [existingEvaluation, setExistingEvaluation] = useState<Evaluation | null>(null);
@@ -84,6 +86,14 @@ export default function JudgeEvaluationWorkspacePage() {
         setTeam(currentTeam);
 
         if (currentTeam) {
+          // Fetch hackathon name
+          try {
+            const hackathon = await api.getHackathon(currentTeam.hackathon_id);
+            setHackathonName(hackathon.title);
+          } catch {
+            setHackathonName("");
+          }
+
           // Fetch submission
           const sub = currentTeam.submission || (await api.listSubmissions()).find((s) => s.team_id === currentTeam.id) || null;
           setSubmission(sub);
@@ -254,6 +264,13 @@ export default function JudgeEvaluationWorkspacePage() {
                 <Badge variant="warning">In Review</Badge>
               )}
             </div>
+            {/* Hackathon name */}
+            {hackathonName && (
+              <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-amber-400/80 font-mono">
+                <Trophy className="w-3 h-3" />
+                <span>{hackathonName}</span>
+              </div>
+            )}
             <p className="text-xs text-graphite-400 font-mono mt-0.5">
               Project: <span className="text-indigo-300 font-semibold">{submission?.project_title}</span> • Rubric: {rubric?.version || "v1.2"}
             </p>

@@ -4,17 +4,18 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
-import { Team, Evaluation } from "@/lib/types";
+import { Team, Evaluation, Hackathon } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
-import { Users, Search, CheckCircle2, Clock, ArrowRight, ExternalLink } from "lucide-react";
+import { Users, Search, CheckCircle2, Clock, ArrowRight, ExternalLink, Trophy } from "lucide-react";
 
 export default function JudgeAssignedTeamsPage() {
   const { user } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [hackathonMap, setHackathonMap] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "SUBMITTED">("ALL");
   const [isLoading, setIsLoading] = useState(true);
@@ -22,10 +23,16 @@ export default function JudgeAssignedTeamsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const teamList = await api.listTeams();
+        const [teamList, evalList, hackathonList] = await Promise.all([
+          api.listTeams(),
+          api.listEvaluations({ judge_id: user?.id }),
+          api.listHackathons(),
+        ]);
         setTeams(teamList);
-        const evalList = await api.listEvaluations({ judge_id: user?.id });
         setEvaluations(evalList);
+        const map: Record<string, string> = {};
+        hackathonList.forEach((h: Hackathon) => { map[h.id] = h.title; });
+        setHackathonMap(map);
       } catch (err) {
         console.error(err);
       } finally {
@@ -123,6 +130,14 @@ export default function JudgeAssignedTeamsPage() {
                     <Badge variant="warning">Pending Evaluation</Badge>
                   )}
                 </div>
+
+                {/* Hackathon name */}
+                {hackathonMap[team.hackathon_id] && (
+                  <div className="flex items-center gap-1.5 text-[11px] text-amber-400/80 font-mono">
+                    <Trophy className="w-3 h-3" />
+                    <span>{hackathonMap[team.hackathon_id]}</span>
+                  </div>
+                )}
 
                 <h4 className="text-xs font-semibold text-indigo-300">
                   {team.submission?.project_title || "No submission title recorded"}
