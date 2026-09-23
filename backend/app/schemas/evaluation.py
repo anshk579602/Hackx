@@ -1,7 +1,8 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Dict, Optional, List, Any
+from typing import Dict, Optional, List
 from datetime import datetime
 from app.schemas.user import UserResponse
+from app.schemas.team import TeamResponse
 
 class BlockchainRecordResponse(BaseModel):
     id: str
@@ -47,7 +48,7 @@ class EvaluationResponse(EvaluationBase):
     created_at: datetime
     updated_at: datetime
     judge: Optional[UserResponse] = None
-    team: Optional[Any] = None
+    team: Optional[TeamResponse] = None
     blockchain_record: Optional[BlockchainRecordResponse] = None
 
     model_config = ConfigDict(from_attributes=True)
