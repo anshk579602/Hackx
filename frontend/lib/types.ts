@@ -27,6 +27,7 @@ export interface Hackathon {
   status: string;
   is_published: boolean;
   active_rubric_id?: string;
+  active_rubric?: Rubric;
   created_at: string;
 }
 

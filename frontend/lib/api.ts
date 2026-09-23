@@ -143,6 +143,38 @@ class ApiClient {
     });
   }
 
+  async updateHackathon(id: string, data: Partial<Hackathon>): Promise<Hackathon> {
+    return this.request<Hackathon>(`/hackathons/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getHackathonTeamsSummary(id: string): Promise<{
+    hackathon_id: string;
+    total_teams: number;
+    teams: Array<{
+      team_id: string;
+      team_name: string;
+      join_code: string;
+      member_count: number;
+      members: Array<{
+        user_id: string;
+        name: string;
+        email: string;
+        role_in_team: string;
+      }>;
+      has_submission: boolean;
+      submission_id?: string | null;
+      project_title?: string | null;
+      submission_url?: string | null;
+      evaluation_count: number;
+      avg_score?: number | null;
+    }>;
+  }> {
+    return this.request(`/hackathons/${id}/teams-summary`);
+  }
+
   async deleteHackathon(id: string): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/hackathons/${id}`, {
       method: "DELETE",

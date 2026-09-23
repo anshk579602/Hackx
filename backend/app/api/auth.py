@@ -67,21 +67,32 @@ async def demo_login(role: str, db: AsyncSession = Depends(get_db)):
     Direct demo login for hackathon demo showcase.
     Supports role: 'organizer', 'judge', 'participant'
     """
-    role_email_map = {
-        "organizer": "organizer@hackx.demo",
-        "judge": "judge@hackx.demo",
-        "participant": "participant@hackx.demo",
+    role_email_candidates = {
+        "organizer": ["organizer@hackx.demo", "organizer@verijudge.demo", "250153094@rkgit.edu.in"],
+        "judge": ["judge@hackx.demo", "judge@verijudge.demo"],
+        "participant": ["participant@hackx.demo", "participant@verijudge.demo"],
     }
-    target_email = role_email_map.get(role.lower())
-    if not target_email:
+    candidates = role_email_candidates.get(role.lower())
+    if not candidates:
         raise HTTPException(status_code=400, detail="Invalid demo role")
 
-    stmt = select(User).where(User.email == target_email)
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
+    user = None
+    for cand in candidates:
+        stmt = select(User).where(User.email == cand)
+        res = await db.execute(stmt)
+        user = res.scalar_one_or_none()
+        if user:
+            break
 
     if not user:
-        raise HTTPException(status_code=404, detail="Demo user not found. Please run database seed.")
+        # Fallback to any user with that role
+        role_enum = UserRole.ORGANIZER if role.lower() == "organizer" else (UserRole.JUDGE if role.lower() == "judge" else UserRole.PARTICIPANT)
+        stmt = select(User).where(User.role == role_enum)
+        res = await db.execute(stmt)
+        user = res.scalars().first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Demo user not found. Please register an account.")
 
     token = create_access_token({"sub": user.id, "role": user.role.value, "email": user.email})
     return {

@@ -14,6 +14,15 @@ class HackathonBase(BaseModel):
 class HackathonCreate(HackathonBase):
     pass
 
+class HackathonUpdate(BaseModel):
+    title: Optional[str] = None
+    tagline: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    status: Optional[str] = None
+    active_rubric_id: Optional[str] = None
+
 class HackathonResponse(HackathonBase):
     id: str
     is_published: bool
