@@ -28,7 +28,7 @@ export default function JudgeLayout({
   }
 
   return (
-    <div className="flex-1 flex w-full">
+    <div className="flex-1 flex w-full bg-[#0e0a00]">
       <JudgeSidebar />
       <div className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full overflow-y-auto">
         {children}

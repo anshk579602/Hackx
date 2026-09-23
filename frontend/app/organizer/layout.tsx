@@ -28,7 +28,7 @@ export default function OrganizerLayout({
   }
 
   return (
-    <div className="flex-1 flex w-full">
+    <div className="flex-1 flex w-full bg-[#07091a]">
       <OrganizerSidebar />
       <div className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full overflow-y-auto">
         {children}
