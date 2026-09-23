@@ -81,6 +81,22 @@ export default function HackathonDetailPage() {
 
   // Expanded team row
   const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
+  const [teamToDelete, setTeamToDelete] = useState<TeamSummaryItem | null>(null);
+  const [isDeletingTeam, setIsDeletingTeam] = useState(false);
+
+  const handleDeleteTeam = async () => {
+    if (!teamToDelete) return;
+    setIsDeletingTeam(true);
+    try {
+      await api.deleteTeam(teamToDelete.team_id);
+      setTeamsSummary((prev) => prev.filter((t) => t.team_id !== teamToDelete.team_id));
+      setTeamToDelete(null);
+    } catch (err: any) {
+      alert(`Team deletion failed: ${err.message || "Unknown error"}`);
+    } finally {
+      setIsDeletingTeam(false);
+    }
+  };
 
   const loadData = async () => {
     if (!id || id === "undefined") {
@@ -429,9 +445,9 @@ export default function HackathonDetailPage() {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         {t.avg_score !== null && t.avg_score !== undefined && (
-                          <div className="text-right">
+                          <div className="text-right mr-1">
                             <span className="text-xs font-mono text-emerald-400 font-bold">
                               {t.avg_score} / 100
                             </span>
@@ -439,8 +455,21 @@ export default function HackathonDetailPage() {
                           </div>
                         )}
                         <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTeamToDelete(t);
+                          }}
+                          className="p-1 h-8 w-8 text-rose-400 hover:text-white border border-rose-500/30 hover:bg-rose-600/40"
+                          title="Delete Team"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => setExpandedTeamId(isExpanded ? null : t.team_id)}
                           className="p-1 h-8 w-8 text-graphite-400 hover:text-white"
                         >
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -706,6 +735,63 @@ export default function HackathonDetailPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Team Confirmation Modal */}
+      {teamToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/40 bg-graphite-900 p-6 shadow-2xl shadow-rose-950/50 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Delete Team</h3>
+                <p className="text-xs text-graphite-400">Permanently delete team from this hackathon.</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-graphite-950 border border-graphite-800 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-graphite-400">Team Name:</span>
+                <span className="font-bold text-white">{teamToDelete.team_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-graphite-400">Join Code:</span>
+                <span className="font-mono text-indigo-300">{teamToDelete.join_code}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-graphite-400">Members:</span>
+                <span className="text-white">{teamToDelete.member_count}</span>
+              </div>
+              <div className="pt-2 border-t border-graphite-850 text-rose-400 text-[11px] leading-relaxed">
+                ⚠️ This will permanently remove the team's registration, submission, and any recorded evaluations.
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTeamToDelete(null)}
+                disabled={isDeletingTeam}
+                className="text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteTeam}
+                disabled={isDeletingTeam}
+                className="text-xs gap-1.5 shadow-lg shadow-rose-900/40"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeletingTeam ? "Deleting Team..." : "Confirm Delete"}</span>
+              </Button>
+            </div>
           </div>
         </div>
       )}

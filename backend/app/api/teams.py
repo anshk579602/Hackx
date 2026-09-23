@@ -11,6 +11,8 @@ from app.models.user import User, UserRole
 from app.schemas.team import TeamCreate, TeamResponse, TeamJoin
 from app.models.submission import Submission
 from app.models.evaluation import Evaluation
+from app.models.blockchain_record import BlockchainRecord
+from app.models.audit_log import AuditLog
 from app.services.auth_service import get_current_user, get_password_hash
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
@@ -239,3 +241,78 @@ async def join_team(
     await db.commit()
     await db.refresh(team)
     return team
+
+@router.delete("/{team_id}")
+async def delete_team(
+    team_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Delete a team and cleanly cascade remove related submissions, evaluations, and memberships.
+    Organizers have unrestricted authority to manage and delete any team.
+    Team leaders may also delete their own team.
+    """
+    team_res = await db.execute(select(Team).where(Team.id == team_id))
+    team = team_res.scalar_one_or_none()
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    is_organizer = current_user.role == UserRole.ORGANIZER
+    if not is_organizer:
+        leader_res = await db.execute(
+            select(TeamMember).where(
+                TeamMember.team_id == team_id,
+                TeamMember.user_id == current_user.id,
+                TeamMember.role_in_team == "Team Leader"
+            )
+        )
+        if not leader_res.scalar_one_or_none():
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied: Only organizers or the team leader can delete this team."
+            )
+
+    team_name = team.name
+
+    # 1. Clean up evaluations & blockchain records
+    eval_res = await db.execute(select(Evaluation).where(Evaluation.team_id == team_id))
+    evaluations = eval_res.scalars().all()
+    for ev in evaluations:
+        bc_res = await db.execute(select(BlockchainRecord).where(BlockchainRecord.evaluation_id == ev.id))
+        bc = bc_res.scalar_one_or_none()
+        if bc:
+            await db.delete(bc)
+        await db.delete(ev)
+
+    # 2. Clean up submissions & claims
+    sub_res = await db.execute(select(Submission).where(Submission.team_id == team_id))
+    sub = sub_res.scalar_one_or_none()
+    if sub:
+        await db.delete(sub)
+
+    # 3. Clean up team members
+    mem_res = await db.execute(select(TeamMember).where(TeamMember.team_id == team_id))
+    members = mem_res.scalars().all()
+    for m in members:
+        await db.delete(m)
+
+    # 4. Delete the team itself
+    await db.delete(team)
+
+    # 5. Log audit trail entry
+    role_str = current_user.role.value if hasattr(current_user.role, "value") else str(current_user.role)
+    audit = AuditLog(
+        entity_type="TEAM",
+        entity_id=team_id,
+        actor_id=current_user.id,
+        actor_role=role_str,
+        actor_name=current_user.full_name,
+        action="TEAM_DELETED",
+        details={"team_name": team_name, "deleted_by": current_user.email}
+    )
+    db.add(audit)
+
+    await db.commit()
+    return {"message": f"Team '{team_name}' has been successfully deleted.", "team_id": team_id}
+

@@ -242,6 +242,12 @@ class ApiClient {
     });
   }
 
+  async deleteTeam(teamId: string): Promise<{ message: string; team_id: string }> {
+    return this.request<{ message: string; team_id: string }>(`/teams/${teamId}`, {
+      method: "DELETE",
+    });
+  }
+
   // Submissions
   async listSubmissions(): Promise<Submission[]> {
     return this.request<Submission[]>("/submissions");
