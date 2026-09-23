@@ -47,7 +47,7 @@ export function GuardrailChallengeModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Evaluation Guardrail: Justification Requested"
-      description="VeriJudge AI detected a divergence between awarded scores and repository evidence."
+      description="HackX detected a divergence between awarded scores and repository evidence."
       className="max-w-xl"
     >
       <div className="space-y-4">
@@ -119,7 +119,7 @@ export function GuardrailChallengeModal({
         <p className="text-[11px] text-graphite-400 flex items-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
           <span>
-            VeriJudge never alters human scores. Your justification will be hashed and permanently anchored to the blockchain.
+            HackX never alters human scores. Your justification will be hashed and permanently anchored to the blockchain.
           </span>
         </p>
 

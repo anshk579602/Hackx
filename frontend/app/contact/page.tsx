@@ -18,7 +18,7 @@ export default function ContactPage() {
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-extrabold text-white">Contact & Support</h1>
         <p className="text-xs text-graphite-400">
-          Inquire about deploying VeriJudge AI for your university, corporate, or web3 hackathon.
+          Inquire about deploying HackX for your university, corporate, or web3 hackathon.
         </p>
       </div>
 
@@ -35,7 +35,7 @@ export default function ContactPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input label="Your Name" placeholder="Alex Rivers" required />
             <Input label="Email Address" type="email" placeholder="alex@hackathon.org" required />
-            <Input label="Hackathon / Organization" placeholder="InnovateX 2026" required />
+            <Input label="Hackathon / Organization" placeholder="HackX 2026 Championship" required />
             <Textarea label="Message" placeholder="Tell us about your judging requirements, expected teams, and dates..." rows={4} required />
             <Button type="submit" variant="primary" className="w-full">
               Send Inquiry

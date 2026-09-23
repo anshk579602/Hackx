@@ -1,4 +1,4 @@
-# HackJudge (VeriJudge AI) ⚖️⚡
+# HackX ⚖️⚡
 > **Transparent, Evidence-Based Hackathon Evaluation**  
 > *"AI-assisted. Human-decided. Blockchain-auditable."*
 

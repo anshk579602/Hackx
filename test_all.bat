@@ -1,6 +1,6 @@
 @echo off
 echo ============================================================
-echo   HackJudge (VeriJudge AI) - Full Verification Test Suite
+echo   HackX - Full Verification Test Suite
 echo ============================================================
 
 echo [1/3] Running Backend Tests (pytest)...
@@ -34,5 +34,5 @@ cd ..
 
 echo.
 echo ============================================================
-echo   ALL VERIFICATION SUITES PASSED CLEANLY!
+echo   ALL HACKX VERIFICATION SUITES PASSED CLEANLY!
 echo ============================================================

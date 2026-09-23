@@ -190,14 +190,16 @@ export default function LoginPage() {
       }
     }
 
-    const t1 = setTimeout(() => setSplashStep(1), 500);
-    const t2 = setTimeout(() => setSplashStep(2), 1200);
-    const t3 = setTimeout(() => setShowSplash(false), 2200);
+    const t1 = setTimeout(() => setSplashStep(1), 1200);
+    const t2 = setTimeout(() => setSplashStep(2), 2500);
+    const t3 = setTimeout(() => setSplashStep(3), 3700);
+    const t4 = setTimeout(() => setShowSplash(false), 4800);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      clearTimeout(t4);
     };
   }, []);
 
@@ -221,25 +223,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-graphite-950 text-graphite-100 flex flex-col relative overflow-hidden select-none">
-      {/* 1. CINEMATIC SPLASH SCREEN (ONLY "HACKJUDGE" NAME OPENS WITH ANIMATION) */}
+    <div className="min-h-screen bg-[#06080d] text-graphite-100 flex flex-col relative overflow-hidden select-none">
+      {/* 1. CINEMATIC SPLASH SCREEN (SOLID OPAQUE BACKGROUND, ONLY "HACKX" WITH EXTENDED DISPLAY) */}
       <AnimatePresence>
         {showSplash && (
           <motion.div
             key="splash-screen"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-graphite-950 px-6 overflow-hidden"
+            exit={{ opacity: 0, scale: 1.02 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="fixed inset-0 z-[99999] flex flex-col items-center justify-center px-6 overflow-hidden select-none"
+            style={{ backgroundColor: "#06080d" }}
           >
-            {/* Background Atmosphere */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.25)_0%,rgba(16,185,129,0.08)_35%,rgba(0,0,0,0.95)_75%)] pointer-events-none" />
+            {/* 100% Solid Non-Transparent Foundation Layer */}
+            <div className="absolute inset-0 bg-[#06080d] pointer-events-none" />
+
+            {/* Ambient Nebula Glow - Contained within solid dark canvas */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.22)_0%,rgba(16,185,129,0.08)_40%,#06080d_75%)] pointer-events-none" />
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293d20_1px,transparent_1px),linear-gradient(to_bottom,#1f293d20_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
             {/* Glowing Aura Rings */}
             <motion.div
-              animate={{ scale: [1, 1.25, 1], opacity: [0.3, 0.6, 0.3] }}
-              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              animate={{ scale: [1, 1.25, 1], opacity: [0.35, 0.65, 0.35] }}
+              transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
               className="absolute w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none"
             />
 
@@ -258,7 +264,7 @@ export default function LoginPage() {
                 </div>
               </motion.div>
 
-              {/* ONLY PORTAL NAME: HACKJUDGE ANIMATION */}
+              {/* ONLY PORTAL NAME: HACKX ANIMATION */}
               <motion.div
                 initial={{ opacity: 0, y: 30, letterSpacing: "0.2em" }}
                 animate={{ opacity: 1, y: 0, letterSpacing: "-0.03em" }}
@@ -268,7 +274,7 @@ export default function LoginPage() {
                 <h1 className="text-6xl sm:text-8xl md:text-9xl font-black uppercase tracking-tight select-none">
                   <span className="text-white drop-shadow-lg">HACK</span>
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-emerald-400 drop-shadow-[0_0_40px_rgba(99,102,241,0.5)]">
-                    JUDGE
+                    X
                   </span>
                 </h1>
 
@@ -294,7 +300,7 @@ export default function LoginPage() {
                   <motion.div
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
-                    transition={{ duration: 1.8, ease: "easeInOut" }}
+                    transition={{ duration: 4.4, ease: "easeInOut" }}
                     className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 rounded-full"
                   />
                 </div>
@@ -302,10 +308,13 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between text-[11px] font-mono text-graphite-400 px-1">
                   <span>
                     {splashStep === 0 && "[ INITIALIZING CRYPTOGRAPHIC VAULT ]"}
-                    {splashStep === 1 && "[ VERIFYING ROLE PORTALS ]"}
-                    {splashStep >= 2 && "[ LAUNCHING SECURE MATRIX... ]"}
+                    {splashStep === 1 && "[ VERIFYING ROLE PORTALS & SIGNATURES ]"}
+                    {splashStep === 2 && "[ SYNCHRONIZING WITH IMMUTABLE LEDGER ]"}
+                    {splashStep >= 3 && "[ SECURE MATRIX READY • WELCOME TO HACKX ]"}
                   </span>
-                  <span className="text-emerald-400">STATUS: 100% OK</span>
+                  <span className="text-emerald-400">
+                    {splashStep >= 3 ? "100% OK" : "SYNCING"}
+                  </span>
                 </div>
               </motion.div>
 
@@ -318,9 +327,9 @@ export default function LoginPage() {
               >
                 <button
                   onClick={() => setShowSplash(false)}
-                  className="px-5 py-2 rounded-full border border-graphite-750 bg-graphite-900/80 hover:bg-graphite-800 text-xs font-mono text-graphite-300 hover:text-white transition-all flex items-center gap-2 group"
+                  className="px-6 py-2.5 rounded-full border border-indigo-500/40 bg-indigo-950/60 hover:bg-indigo-900/80 text-xs font-mono text-indigo-200 hover:text-white transition-all flex items-center gap-2 group shadow-lg shadow-indigo-950/50"
                 >
-                  <span>Enter Portal Now</span>
+                  <span>Enter HackX Now</span>
                   <ArrowRight className="w-3.5 h-3.5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
                 </button>
               </motion.div>
@@ -646,7 +655,7 @@ export default function LoginPage() {
 
         {/* Global Footer Security Pill */}
         <div className="mt-12 text-center text-xs text-graphite-500 font-mono">
-          <span>HackJudge Protocol v2.4 • End-to-End Cryptographic Persistence</span>
+          <span>HackX Protocol v2.4 • End-to-End Cryptographic Persistence</span>
         </div>
       </div>
     </div>

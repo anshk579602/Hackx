@@ -136,7 +136,7 @@ export default function OrganizerDashboard() {
                   <span>Get Started in 3 Simple Steps</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-white">
-                  Welcome to HackJudge, {user?.full_name || "Organiser"}!
+                  Welcome to HackX, {user?.full_name || "Organiser"}!
                 </h2>
                 <p className="text-sm text-graphite-300 leading-relaxed">
                   Your platform is freshly initialized with zero mock data. Follow the 3-step checklist below to launch your transparent, verifiable hackathon.

@@ -78,7 +78,7 @@ async def get_decision_replay(evaluation_id: str, db: AsyncSession = Depends(get
     timeline.append({
         "step": 2,
         "time": "10:32 AM",
-        "actor": "VeriJudge AI Agent",
+        "actor": "HackX AI Agent",
         "role": "AI_AGENT",
         "title": "Claims Extraction & Atomization",
         "description": "AI agent analyzed repository README, technical stack, and architecture specs, decomposing complex statements into verifiable atomic subclaims.",
@@ -90,7 +90,7 @@ async def get_decision_replay(evaluation_id: str, db: AsyncSession = Depends(get
     timeline.append({
         "step": 3,
         "time": "10:35 AM",
-        "actor": "VeriJudge AI Agent",
+        "actor": "HackX AI Agent",
         "role": "AI_AGENT",
         "title": "Evidence Verification Completed",
         "description": "Cross-referenced repository code, stress test logs, and live demo. Categorized claims as Supported, Partially Supported, Unsupported, and Contradicted.",

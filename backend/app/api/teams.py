@@ -68,15 +68,10 @@ async def create_team(
         if first_hack:
             target_hackathon_id = first_hack.id
         else:
-            new_hack = Hackathon(
-                title="HackJudge Open Championship 2026",
-                tagline="Transparent, Evidence-Based Hackathon Evaluation",
-                description="Primary competitive arena for sovereign AI projects.",
-                status="ACTIVE"
+            raise HTTPException(
+                status_code=400,
+                detail="No hosted hackathon event exists yet. An organiser must first host a hackathon before teams can register."
             )
-            db.add(new_hack)
-            await db.flush()
-            target_hackathon_id = new_hack.id
 
     code = generate_join_code()
     team = Team(

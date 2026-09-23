@@ -4,9 +4,9 @@ import { AuthProvider } from "@/lib/auth-context";
 import { Navbar } from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
-  title: "HackJudge (VeriJudge AI) — Transparent, Evidence-Based Hackathon Evaluation",
+  title: "HackX — Transparent, Evidence-Based Hackathon Evaluation",
   description:
-    "VeriJudge AI helps hackathon judges evaluate projects fairly using AI-generated evidence reports. Every finalized evaluation is hashed and anchored to blockchain, making it auditable and tamper-evident.",
+    "HackX helps hackathons evaluate projects fairly using AI-generated evidence reports. Every finalized evaluation is hashed and anchored to blockchain, making it auditable and tamper-evident.",
 };
 
 export default function RootLayout({

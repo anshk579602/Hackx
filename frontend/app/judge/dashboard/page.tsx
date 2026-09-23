@@ -65,7 +65,7 @@ export default function JudgeDashboard() {
             <Badge variant="warning">Accredited Judge</Badge>
           </div>
           <p className="text-xs text-graphite-400 mt-1">
-            {user?.organization ? `${user.organization} • ` : ""}HackJudge Evaluation Panel
+            {user?.organization ? `${user.organization} • ` : ""}HackX Evaluation Panel
           </p>
         </div>
 

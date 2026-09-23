@@ -82,7 +82,7 @@ async def run_ai_analysis_pipeline(submission_id: str, submission_payload: dict)
                 entity_id=submission.id,
                 action="AI_ANALYSIS_COMPLETED",
                 actor_role="AI_AGENT",
-                actor_name="VeriJudge AI Evidence Agent",
+                actor_name="HackX AI Evidence Agent",
                 details={
                     "claims_count": len(analysis["claims"]),
                     "evidence_bundle_hash": bundle_hash

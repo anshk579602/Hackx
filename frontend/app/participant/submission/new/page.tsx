@@ -230,7 +230,7 @@ export default function NewSubmissionPage() {
               />
               <Input
                 label="Live Demo URL"
-                placeholder="https://demo.verijudge.ai"
+                placeholder="https://demo.hackx.dev"
                 value={liveDemoUrl}
                 onChange={(e) => setLiveDemoUrl(e.target.value)}
               />
@@ -239,13 +239,13 @@ export default function NewSubmissionPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Pitch Deck / PPT / PDF URL"
-                placeholder="https://verijudge.ai/uploads/deck.pdf"
+                placeholder="https://hackx.dev/uploads/deck.pdf"
                 value={pptUrl}
                 onChange={(e) => setPptUrl(e.target.value)}
               />
               <Input
                 label="Architecture Diagram URL"
-                placeholder="https://verijudge.ai/uploads/architecture.png"
+                placeholder="https://hackx.dev/uploads/architecture.png"
                 value={architectureUrl}
                 onChange={(e) => setArchitectureUrl(e.target.value)}
               />

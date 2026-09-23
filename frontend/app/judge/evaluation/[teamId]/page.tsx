@@ -391,7 +391,7 @@ export default function JudgeEvaluationWorkspacePage() {
             overallFeedback={overallFeedback}
             onOverallFeedbackChange={setOverallFeedback}
             teamId={team?.id || teamId}
-            hackathonId={team?.hackathon_id || "innovatex-2026"}
+            hackathonId={team?.hackathon_id || ""}
             rubricVersion={rubric?.version || "v1.2"}
             existingEvaluation={existingEvaluation}
             onEvaluationSubmitted={(ev) => setExistingEvaluation(ev)}
