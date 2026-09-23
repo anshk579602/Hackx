@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
-import { Team, Hackathon } from "@/lib/types";
+import { Team, Hackathon, TeamMemberInput } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -14,6 +15,8 @@ import {
   Check,
   Plus,
   UserPlus,
+  UserCheck,
+  Trash2,
   ArrowRight,
   Shield,
   Trophy,
@@ -24,16 +27,33 @@ import {
   AlertCircle
 } from "lucide-react";
 
+const COMMON_ROLES = [
+  "Frontend Developer",
+  "Backend Developer",
+  "Fullstack Developer",
+  "AI / ML Engineer",
+  "UI / UX Designer",
+  "Smart Contract Dev",
+  "DevOps / Cloud",
+];
+
 export default function ParticipantTeamPage() {
+  const { user } = useAuth();
   const [team, setTeam] = useState<Team | null>(null);
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [selectedHackathonId, setSelectedHackathonId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  // Form states
+  // Form states for 6-member team
   const [createTeamName, setCreateTeamName] = useState("");
+  const [leaderRole, setLeaderRole] = useState("Team Leader / Fullstack");
+  const [members, setMembers] = useState<TeamMemberInput[]>([
+    { full_name: "", email: "", role_in_team: "Frontend Developer" },
+  ]);
+
   const [joinCode, setJoinCode] = useState("");
+  const [activeTab, setActiveTab] = useState<"create" | "join">("create");
   const [actionError, setActionError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,7 +63,7 @@ export default function ParticipantTeamPage() {
     try {
       const [myTeam, hacks] = await Promise.all([
         api.getMyTeam(),
-        api.listHackathons()
+        api.listHackathons(),
       ]);
       setTeam(myTeam);
       setHackathons(hacks || []);
@@ -69,19 +89,54 @@ export default function ParticipantTeamPage() {
     }
   };
 
+  const handleAddMember = () => {
+    if (members.length >= 5) return;
+    setMembers([
+      ...members,
+      { full_name: "", email: "", role_in_team: "Backend Developer" },
+    ]);
+  };
+
+  const handleRemoveMember = (index: number) => {
+    setMembers(members.filter((_, i) => i !== index));
+  };
+
+  const handleMemberChange = (
+    index: number,
+    field: keyof TeamMemberInput,
+    value: string
+  ) => {
+    const updated = [...members];
+    updated[index][field] = value;
+    setMembers(updated);
+  };
+
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createTeamName.trim()) return;
+    if (!createTeamName.trim()) {
+      setActionError("Please enter a valid Team Name.");
+      return;
+    }
     if (!selectedHackathonId) {
       setActionError("Please select a hosted hackathon event first.");
       return;
     }
+
+    const validMembers: TeamMemberInput[] = members
+      .filter((m) => m.email.trim().length > 0)
+      .map((m) => ({
+        full_name: m.full_name.trim() || m.email.split("@")[0],
+        email: m.email.trim().toLowerCase(),
+        role_in_team: m.role_in_team.trim() || "Developer",
+      }));
+
     setActionError(null);
     setIsSubmitting(true);
     try {
       const newTeam = await api.createTeam({
         name: createTeamName.trim(),
         hackathon_id: selectedHackathonId,
+        members: validMembers,
       });
       setTeam(newTeam);
       setCreateTeamName("");
@@ -127,10 +182,10 @@ export default function ParticipantTeamPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-2.5">
             <Users className="w-7 h-7 text-emerald-400" />
-            <span>Team & Squad Management</span>
+            <span>Team Management</span>
           </h1>
           <p className="text-xs text-graphite-400 mt-1">
-            Browse hosted hackathon events, register your squad, share your invite code, and prepare submissions.
+            Browse hosted hackathon events, register your team with up to 6 members, and manage your team roster.
           </p>
         </div>
 
@@ -164,10 +219,10 @@ export default function ParticipantTeamPage() {
                 <div>
                   <div className="flex items-center gap-2.5">
                     <CardTitle className="text-xl font-bold text-white">{team.name}</CardTitle>
-                    <Badge variant="success">Registered Squad</Badge>
+                    <Badge variant="success">Registered Team</Badge>
                   </div>
                   <p className="text-xs text-graphite-400 mt-0.5">
-                    Squad ID: <span className="font-mono">{team.id.substring(0, 8)}...</span>
+                    Team ID: <span className="font-mono">{team.id.substring(0, 8)}...</span>
                   </p>
                 </div>
               </div>
@@ -206,10 +261,10 @@ export default function ParticipantTeamPage() {
                   </span>
                 </span>
                 <Link
-                  href="/participant/team/members"
-                  className="text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1"
+                  href="/participant/submission/new"
+                  className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
                 >
-                  <span>Manage All Members ({team.members?.length || 1})</span>
+                  <span>Submit Project for this Team</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -218,33 +273,44 @@ export default function ParticipantTeamPage() {
 
           {/* Members list */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-              <Users className="w-4 h-4 text-emerald-400" />
-              <span>Squad Roster ({team.members?.length || 1})</span>
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {(team.members || []).map((m) => (
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Users className="w-4 h-4 text-emerald-400" />
+                <span>Team Roster ({team.members?.length || 1} / 6 Members)</span>
+              </h3>
+              <Link
+                href="/participant/team/members"
+                className="text-xs text-emerald-400 hover:underline font-medium"
+              >
+                View Detailed Roster &rarr;
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {(team.members || []).map((m, idx) => (
                 <div
                   key={m.id}
-                  className="p-3.5 rounded-xl border border-graphite-800 bg-graphite-850 flex items-center justify-between"
+                  className="p-4 rounded-xl border border-graphite-800 bg-graphite-850 flex items-center justify-between shadow-sm"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-full bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-400 text-xs">
                       {m.user?.full_name?.charAt(0) || "U"}
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-white">{m.user?.full_name || "Hacker"}</p>
-                      <p className="text-[11px] text-graphite-400 font-mono">{m.user?.organization || m.user?.email}</p>
+                      <p className="text-xs font-semibold text-white">{m.user?.full_name || "Team Member"}</p>
+                      <p className="text-[11px] text-graphite-400 font-mono line-clamp-1">{m.user?.email}</p>
                     </div>
                   </div>
-                  <Badge variant="success">{m.role_in_team}</Badge>
+                  <Badge variant={idx === 0 ? "indigo" : "success"} className="text-[10px]">
+                    {m.role_in_team}
+                  </Badge>
                 </div>
               ))}
             </div>
           </div>
         </div>
       ) : (
-        /* No Team Yet: Show Hosted Events First, Then Registration Forms */
+        /* No Team Yet: Show Hosted Events First, Then Registration Form */
         <div className="space-y-8">
           {/* SECTION 1: HOSTED HACKATHONS */}
           <div className="space-y-4">
@@ -255,10 +321,10 @@ export default function ParticipantTeamPage() {
                   <span>Available Hosted Hackathon Events</span>
                 </h2>
                 <p className="text-xs text-graphite-400 mt-0.5">
-                  Select a hosted hackathon to register your team. Teams can only register for active hosted events.
+                  Select an active hackathon below to register your team.
                 </p>
               </div>
-              <Badge variant="indigo">{hackathons.length} Event{hackathons.length === 1 ? "" : "s"} Hosted</Badge>
+              <Badge variant="indigo">{hackathons.length} Event{hackathons.length === 1 ? "" : "s"} Open</Badge>
             </div>
 
             {hackathons.length === 0 ? (
@@ -269,7 +335,7 @@ export default function ParticipantTeamPage() {
                 <div className="space-y-1.5 max-w-md mx-auto">
                   <h3 className="text-base font-bold text-white">No Active Hackathon Events Hosted Yet</h3>
                   <p className="text-xs text-graphite-300 leading-relaxed">
-                    An organiser must first create and host a hackathon event on HackX before participant squads can register. Once an event is published, it will appear here for team registration.
+                    An organiser must first host a hackathon event on HackX before teams can register. Once an event is published, it will appear here for team registration.
                   </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={loadData} className="gap-2 border-graphite-700">
@@ -330,84 +396,260 @@ export default function ParticipantTeamPage() {
             )}
           </div>
 
-          {/* SECTION 2: CREATE OR JOIN OPTIONS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            {/* Create Team Form */}
-            <Card className="border-graphite-750">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Plus className="w-5 h-5 text-emerald-400" />
-                  <span>Create a New Squad</span>
-                </CardTitle>
-                <p className="text-xs text-graphite-400">
-                  {selectedHackathon ? (
-                    <>
-                      Registering team for: <strong className="text-emerald-400">{selectedHackathon.title}</strong>
-                    </>
-                  ) : (
-                    "Select an active event above to register your team."
-                  )}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCreateTeam} className="space-y-4">
-                  <Input
-                    label="Squad / Team Name *"
-                    placeholder="e.g. CyberVanguard AI"
-                    value={createTeamName}
-                    onChange={(e) => setCreateTeamName(e.target.value)}
-                    disabled={hackathons.length === 0 || isSubmitting}
-                    required
-                  />
+          {/* SECTION 2: REGISTRATION TABS (CREATE 6-MEMBER TEAM OR JOIN WITH CODE) */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center gap-2 border-b border-graphite-800 pb-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("create")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                  activeTab === "create"
+                    ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                    : "text-graphite-400 hover:text-white"
+                }`}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Register 6-Member Team</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("join")}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                  activeTab === "join"
+                    ? "bg-indigo-500/15 text-indigo-300 border border-indigo-500/30"
+                    : "text-graphite-400 hover:text-white"
+                }`}
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Join with Code</span>
+              </button>
+            </div>
 
-                  <Button
-                    type="submit"
-                    variant="emerald"
-                    className="w-full font-semibold"
-                    disabled={hackathons.length === 0 || isSubmitting}
-                    isLoading={isSubmitting}
-                  >
-                    {hackathons.length === 0
-                      ? "Waiting for Hosted Event"
-                      : `Register Team for ${selectedHackathon?.title || "Hackathon"}`}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            {activeTab === "create" ? (
+              /* Comprehensive 6-Member Team Registration Form */
+              <Card className="border-graphite-750 bg-graphite-900/90 shadow-xl">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-lg text-white">
+                        <Users className="w-5 h-5 text-emerald-400" />
+                        <span>Team Registration (Up to 6 Members)</span>
+                      </CardTitle>
+                      <p className="text-xs text-graphite-400 mt-1">
+                        {selectedHackathon ? (
+                          <>
+                            Registering team for:{" "}
+                            <strong className="text-emerald-400 font-semibold">{selectedHackathon.title}</strong>
+                          </>
+                        ) : (
+                          "Select an active event above to register your team."
+                        )}
+                      </p>
+                    </div>
+                    <Badge variant="success" className="text-xs">
+                      1 Leader + up to 5 Teammates
+                    </Badge>
+                  </div>
+                </CardHeader>
 
-            {/* Join Team with Code Form */}
-            <Card className="border-graphite-750">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <UserPlus className="w-5 h-5 text-indigo-400" />
-                  <span>Join with Invite Code</span>
-                </CardTitle>
-                <p className="text-xs text-graphite-400">
-                  Have an invite code from your squad lead? Join them immediately.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleJoinTeam} className="space-y-4">
-                  <Input
-                    label="6-Character Join Code *"
-                    placeholder="e.g. 22EQGM"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    disabled={isSubmitting}
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    className="w-full font-semibold"
-                    disabled={isSubmitting}
-                    isLoading={isSubmitting}
-                  >
-                    Join Existing Squad
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                <CardContent>
+                  <form onSubmit={handleCreateTeam} className="space-y-6">
+                    <Input
+                      label="Team Name *"
+                      placeholder="e.g. CyberVanguard AI"
+                      value={createTeamName}
+                      onChange={(e) => setCreateTeamName(e.target.value)}
+                      disabled={hackathons.length === 0 || isSubmitting}
+                      required
+                    />
+
+                    {/* Member 1: Team Leader */}
+                    <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5 uppercase">
+                          <UserCheck className="w-4 h-4 text-emerald-400" />
+                          <span>Member 1: Team Leader (You)</span>
+                        </span>
+                        <Badge variant="indigo" className="text-[10px]">Leader Account</Badge>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[11px] text-graphite-400 mb-1">Full Name</label>
+                          <input
+                            type="text"
+                            disabled
+                            value={user?.full_name || "You"}
+                            className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-800 text-graphite-300 text-xs cursor-not-allowed"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-graphite-400 mb-1">Email</label>
+                          <input
+                            type="email"
+                            disabled
+                            value={user?.email || ""}
+                            className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-800 text-graphite-300 text-xs cursor-not-allowed font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-graphite-400 mb-1">Leader Role / Track</label>
+                          <input
+                            type="text"
+                            value={leaderRole}
+                            onChange={(e) => setLeaderRole(e.target.value)}
+                            placeholder="e.g. Lead Developer"
+                            className="w-full px-3 py-2 rounded-lg bg-graphite-950 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Teammates */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <UserPlus className="w-4 h-4 text-emerald-400" />
+                            <span>Additional Teammates ({members.length} / 5 slots)</span>
+                          </h4>
+                          <p className="text-[11px] text-graphite-400">
+                            Enter name, email, and role for each teammate (optional at registration, can be added now).
+                          </p>
+                        </div>
+
+                        {members.length < 5 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAddMember}
+                            className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 text-xs gap-1.5"
+                          >
+                            <UserPlus className="w-3.5 h-3.5" />
+                            <span>+ Add Teammate</span>
+                          </Button>
+                        )}
+                      </div>
+
+                      {members.map((member, index) => (
+                        <div
+                          key={index}
+                          className="p-3.5 rounded-xl bg-graphite-950/80 border border-graphite-800 space-y-2.5"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-mono font-semibold text-graphite-300">
+                              Member {index + 2}
+                            </span>
+                            {members.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveMember(index)}
+                                className="text-graphite-500 hover:text-rose-400 text-xs flex items-center gap-1"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Remove</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-[11px] text-graphite-400 mb-1">Full Name</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Alex Rivera"
+                                value={member.full_name}
+                                onChange={(e) =>
+                                  handleMemberChange(index, "full_name", e.target.value)
+                                }
+                                className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] text-graphite-400 mb-1">Email</label>
+                              <input
+                                type="email"
+                                placeholder="alex@team.com"
+                                value={member.email}
+                                onChange={(e) =>
+                                  handleMemberChange(index, "email", e.target.value)
+                                }
+                                className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none font-mono"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] text-graphite-400 mb-1">Role / Track</label>
+                              <input
+                                type="text"
+                                list={`team-roles-${index}`}
+                                placeholder="e.g. Frontend Developer"
+                                value={member.role_in_team}
+                                onChange={(e) =>
+                                  handleMemberChange(index, "role_in_team", e.target.value)
+                                }
+                                className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none"
+                              />
+                              <datalist id={`team-roles-${index}`}>
+                                {COMMON_ROLES.map((r) => (
+                                  <option key={r} value={r} />
+                                ))}
+                              </datalist>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      type="submit"
+                      variant="emerald"
+                      className="w-full font-bold shadow-lg shadow-emerald-600/20 py-3"
+                      disabled={hackathons.length === 0 || isSubmitting}
+                      isLoading={isSubmitting}
+                    >
+                      {hackathons.length === 0
+                        ? "Waiting for Hosted Event"
+                        : `Complete Team Registration for ${selectedHackathon?.title || "Hackathon"}`}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            ) : (
+              /* Join with Code Option */
+              <Card className="border-graphite-750 bg-graphite-900/90 shadow-xl max-w-lg mx-auto">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg text-white">
+                    <UserPlus className="w-5 h-5 text-indigo-400" />
+                    <span>Join with Invite Code</span>
+                  </CardTitle>
+                  <p className="text-xs text-graphite-400">
+                    If your team leader has already registered a team, enter their 6-character code below.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleJoinTeam} className="space-y-4">
+                    <Input
+                      label="6-Character Join Code *"
+                      placeholder="e.g. 22EQGM"
+                      value={joinCode}
+                      onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                      disabled={isSubmitting}
+                      required
+                    />
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      className="w-full font-semibold"
+                      disabled={isSubmitting}
+                      isLoading={isSubmitting}
+                    >
+                      Join Existing Team
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       )}

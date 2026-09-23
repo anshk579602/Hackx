@@ -9,7 +9,9 @@ from app.models.team import Team, TeamMember
 from app.models.hackathon import Hackathon
 from app.models.user import User, UserRole
 from app.schemas.team import TeamCreate, TeamResponse, TeamJoin
-from app.services.auth_service import get_current_user
+from app.models.submission import Submission
+from app.models.evaluation import Evaluation
+from app.services.auth_service import get_current_user, get_password_hash
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
 
@@ -24,15 +26,63 @@ async def list_teams(hackathon_id: str | None = None, db: AsyncSession = Depends
     result = await db.execute(stmt)
     return result.scalars().all()
 
-@router.get("/my-team", response_model=TeamResponse | None)
-async def get_my_team(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+@router.get("/my-participations")
+async def get_my_participations(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
     member_stmt = select(TeamMember).where(TeamMember.user_id == current_user.id)
     result = await db.execute(member_stmt)
-    membership = result.scalar_one_or_none()
-    if not membership:
+    memberships = result.scalars().all()
+
+    participations = []
+    for mem in memberships:
+        team_res = await db.execute(select(Team).where(Team.id == mem.team_id))
+        team = team_res.scalar_one_or_none()
+        if not team:
+            continue
+
+        hack_res = await db.execute(select(Hackathon).where(Hackathon.id == team.hackathon_id))
+        hack = hack_res.scalar_one_or_none()
+
+        sub_res = await db.execute(select(Submission).where(Submission.team_id == team.id))
+        sub = sub_res.scalar_one_or_none()
+
+        eval_res = await db.execute(select(Evaluation).where(Evaluation.team_id == team.id))
+        evaluation = eval_res.scalars().first()
+
+        participations.append({
+            "team": team,
+            "hackathon": hack,
+            "submission": sub,
+            "evaluation": evaluation
+        })
+
+    return participations
+
+@router.get("/my-team", response_model=TeamResponse | None)
+async def get_my_team(
+    hackathon_id: str | None = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    member_stmt = select(TeamMember).where(TeamMember.user_id == current_user.id)
+    result = await db.execute(member_stmt)
+    memberships = result.scalars().all()
+    if not memberships:
         return None
 
-    team_stmt = select(Team).where(Team.id == membership.team_id)
+    if hackathon_id:
+        for mem in memberships:
+            team_res = await db.execute(select(Team).where(Team.id == mem.team_id, Team.hackathon_id == hackathon_id))
+            team = team_res.scalar_one_or_none()
+            if team:
+                return team
+        return None
+
+    # Return most recent team
+    latest_mem = memberships[-1]
+    team_stmt = select(Team).where(Team.id == latest_mem.team_id)
     team_res = await db.execute(team_stmt)
     return team_res.scalar_one_or_none()
 
@@ -51,11 +101,6 @@ async def create_team(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # Check if user already in a team
-    existing_mem = await db.execute(select(TeamMember).where(TeamMember.user_id == current_user.id))
-    if existing_mem.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="You are already a member of a team.")
-
     target_hackathon_id = team_in.hackathon_id
     if target_hackathon_id:
         hack_res = await db.execute(select(Hackathon).where(Hackathon.id == target_hackathon_id))
@@ -73,22 +118,65 @@ async def create_team(
                 detail="No hosted hackathon event exists yet. An organiser must first host a hackathon before teams can register."
             )
 
+    # Check if user already in a team for this specific hackathon
+    existing_mem = await db.execute(
+        select(TeamMember).join(Team).where(
+            TeamMember.user_id == current_user.id,
+            Team.hackathon_id == target_hackathon_id
+        )
+    )
+    if existing_mem.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="You are already registered in a team for this hackathon.")
+
     code = generate_join_code()
     team = Team(
-        name=team_in.name,
+        name=team_in.name.strip(),
         hackathon_id=target_hackathon_id,
         join_code=code
     )
     db.add(team)
     await db.flush()
 
-    # Add creator as Team Lead
+    # Add creator as Team Leader
     lead_member = TeamMember(
         team_id=team.id,
         user_id=current_user.id,
-        role_in_team="Team Lead"
+        role_in_team="Team Leader"
     )
     db.add(lead_member)
+
+    # Process additional members (up to 5 more, so total <= 6)
+    if team_in.members:
+        added_emails = {current_user.email.strip().lower()}
+        for mem_in in team_in.members[:5]:
+            clean_email = mem_in.email.strip().lower()
+            if not clean_email or clean_email in added_emails:
+                continue
+            added_emails.add(clean_email)
+
+            # Check if user exists
+            u_stmt = select(User).where(User.email == clean_email)
+            u_res = await db.execute(u_stmt)
+            mem_user = u_res.scalar_one_or_none()
+            if not mem_user:
+                mem_user = User(
+                    email=clean_email,
+                    full_name=mem_in.full_name.strip() or clean_email.split("@")[0],
+                    role=UserRole.PARTICIPANT,
+                    hashed_password=get_password_hash("Demo123!"),
+                )
+                db.add(mem_user)
+                await db.flush()
+
+            # Add member to team
+            role_desc = mem_in.role_in_team.strip() if mem_in.role_in_team else "Developer"
+            tm = TeamMember(
+                team_id=team.id,
+                user_id=mem_user.id,
+                role_in_team=role_desc
+            )
+            db.add(tm)
+
     await db.commit()
     await db.refresh(team)
     return team

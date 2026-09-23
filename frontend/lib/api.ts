@@ -4,6 +4,8 @@ import {
   Hackathon,
   Rubric,
   Team,
+  TeamMemberInput,
+  ParticipationItem,
   Submission,
   Evaluation,
   GuardrailCheckResult,
@@ -184,7 +186,15 @@ class ApiClient {
     return this.request<Team | null>("/teams/my-team");
   }
 
-  async createTeam(data: { name: string; hackathon_id: string }): Promise<Team> {
+  async getMyParticipations(): Promise<ParticipationItem[]> {
+    return this.request<ParticipationItem[]>("/teams/my-participations");
+  }
+
+  async createTeam(data: {
+    name: string;
+    hackathon_id: string;
+    members?: TeamMemberInput[];
+  }): Promise<Team> {
     return this.request<Team>("/teams", {
       method: "POST",
       body: JSON.stringify(data),

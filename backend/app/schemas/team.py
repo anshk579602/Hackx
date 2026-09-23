@@ -17,8 +17,13 @@ class TeamBase(BaseModel):
     name: str
     hackathon_id: str
 
+class TeamMemberInput(BaseModel):
+    full_name: str
+    email: str
+    role_in_team: str = "Member"
+
 class TeamCreate(TeamBase):
-    pass
+    members: Optional[List[TeamMemberInput]] = None
 
 class TeamJoin(BaseModel):
     join_code: str

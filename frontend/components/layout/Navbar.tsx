@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
+import { ParticipationItem } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import {
@@ -15,13 +17,28 @@ import {
   Sparkles,
   ExternalLink,
   Layers,
-  LayoutDashboard
+  LayoutDashboard,
+  Trophy,
+  FolderGit2,
+  CheckCircle2,
+  Clock,
+  ArrowRight
 } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
   const { user, role, logout } = useAuth();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isParticipationsOpen, setIsParticipationsOpen] = useState(false);
+  const [participations, setParticipations] = useState<ParticipationItem[]>([]);
+
+  useEffect(() => {
+    if (role === "PARTICIPANT") {
+      api.getMyParticipations()
+        .then((data) => setParticipations(data || []))
+        .catch((err) => console.error("Navbar participations error:", err));
+    }
+  }, [role, pathname]);
 
   // Hide global navbar on root landing/splash and auth screens for total visual immersion
   if (pathname === "/" || pathname === "/login" || pathname === "/register") {
@@ -120,6 +137,124 @@ export function Navbar() {
           {/* User profile and Navigation */}
           {user ? (
             <div className="flex items-center gap-3 pl-2 border-l border-graphite-800">
+              {/* Participated Hackathons Dropdown for Participants */}
+              {role === "PARTICIPANT" && (
+                <div className="relative">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setIsParticipationsOpen(!isParticipationsOpen);
+                      setIsNotificationsOpen(false);
+                    }}
+                    className="text-xs border-emerald-500/40 hover:border-emerald-500 hover:bg-emerald-500/10 text-emerald-300 flex items-center gap-1.5 font-medium"
+                  >
+                    <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                    <span className="hidden sm:inline">My Hackathons</span>
+                    <Badge variant="success" className="text-[10px] py-0 px-1.5 font-mono">
+                      {participations.length}
+                    </Badge>
+                    <ChevronDown className="w-3 h-3 text-graphite-400" />
+                  </Button>
+
+                  {isParticipationsOpen && (
+                    <div className="absolute right-0 sm:left-0 sm:right-auto mt-2 w-80 sm:w-96 rounded-2xl border border-graphite-700 bg-graphite-900 p-4 shadow-2xl z-50 animate-in fade-in zoom-in-95 space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-graphite-800">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="w-4 h-4 text-amber-400" />
+                          <span className="text-xs font-bold text-white uppercase tracking-wider">
+                            Participated Hackathons
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                          {participations.length} Enrolled
+                        </span>
+                      </div>
+
+                      {participations.length === 0 ? (
+                        <div className="p-4 rounded-xl bg-graphite-950/60 border border-graphite-800 text-center space-y-1.5">
+                          <p className="text-xs font-medium text-graphite-300">No Participations Yet</p>
+                          <p className="text-[11px] text-graphite-500">
+                            Register your team on the dashboard to start submitting projects and viewing scores.
+                          </p>
+                          <Link
+                            href="/participant/team"
+                            onClick={() => setIsParticipationsOpen(false)}
+                            className="inline-block mt-1 text-xs text-emerald-400 hover:underline font-semibold"
+                          >
+                            Browse &amp; Register Team &rarr;
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                          {participations.map((p) => {
+                            const hasEvaluation = Boolean(p.evaluation);
+                            const hasSubmission = Boolean(p.submission);
+
+                            return (
+                              <div
+                                key={p.team.id}
+                                className="p-3 rounded-xl bg-graphite-950 border border-graphite-800 hover:border-emerald-500/40 transition-all space-y-2"
+                              >
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <h4 className="text-xs font-bold text-white line-clamp-1">
+                                      {p.hackathon?.title || "HackX Championship"}
+                                    </h4>
+                                    <p className="text-[11px] text-graphite-400">
+                                      Team: <span className="text-emerald-400 font-medium">{p.team.name}</span>
+                                    </p>
+                                  </div>
+
+                                  {hasEvaluation ? (
+                                    <Badge variant="success" className="text-[10px]">
+                                      Score: {p.evaluation?.final_score?.toFixed(1)}
+                                    </Badge>
+                                  ) : hasSubmission ? (
+                                    <Badge variant="warning" className="text-[10px]">
+                                      Submitted
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="indigo" className="text-[10px]">
+                                      Registered
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                {/* Quick Links: Submission & Results */}
+                                <div className="flex items-center gap-2 pt-1 border-t border-graphite-850 text-xs">
+                                  <Link
+                                    href={
+                                      hasSubmission
+                                        ? `/participant/submission/${p.submission?.id}`
+                                        : "/participant/submission/new"
+                                    }
+                                    onClick={() => setIsParticipationsOpen(false)}
+                                    className="flex-1 py-1 px-2 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 font-medium flex items-center justify-center gap-1 text-[11px] transition-colors"
+                                  >
+                                    <FolderGit2 className="w-3 h-3" />
+                                    <span>{hasSubmission ? "View Submission" : "Submit Project"}</span>
+                                  </Link>
+
+                                  <Link
+                                    href="/participant/results"
+                                    onClick={() => setIsParticipationsOpen(false)}
+                                    className="flex-1 py-1 px-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-medium flex items-center justify-center gap-1 text-[11px] transition-colors"
+                                  >
+                                    <Trophy className="w-3 h-3" />
+                                    <span>View Results</span>
+                                  </Link>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <Link href={getDashboardLink()}>
                 <Button size="sm" variant="outline" className="text-xs border-graphite-700 hover:border-indigo-500/50 flex items-center gap-1.5">
                   <LayoutDashboard className="w-3.5 h-3.5 text-indigo-400" />

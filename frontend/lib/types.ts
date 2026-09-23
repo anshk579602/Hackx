@@ -107,6 +107,19 @@ export interface Submission {
   claims?: Claim[];
 }
 
+export interface TeamMemberInput {
+  full_name: string;
+  email: string;
+  role_in_team: string;
+}
+
+export interface ParticipationItem {
+  team: Team;
+  hackathon: Hackathon;
+  submission?: Submission | null;
+  evaluation?: Evaluation | null;
+}
+
 export interface Team {
   id: string;
   hackathon_id: string;
