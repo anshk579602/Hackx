@@ -7,12 +7,23 @@ import { Hackathon } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Trophy, PlusCircle, Calendar, ArrowRight } from "lucide-react";
+import { Trophy, PlusCircle, Calendar, ArrowRight, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export default function OrganizerHackathonsPage() {
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleDeleteHackathon = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to permanently delete "${title}"? This will remove all associated teams and evaluations.`)) return;
+    try {
+      await api.deleteHackathon(id);
+      setHackathons((prev) => prev.filter((h) => h.id !== id));
+      alert("Hackathon deleted successfully.");
+    } catch (err: any) {
+      alert("Failed to delete hackathon: " + (err.message || "Unknown error"));
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -87,12 +98,23 @@ export default function OrganizerHackathonsPage() {
                   <p className="text-xs text-graphite-400 mt-1">{h.tagline}</p>
                 </div>
 
-                <Link href={`/organizer/hackathons/${h.id}`}>
-                  <Button size="sm" variant="secondary">
-                    <span>Manage Event</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                <div className="flex items-center gap-2">
+                  <Link href={`/organizer/hackathons/${h.id}`}>
+                    <Button size="sm" variant="secondary">
+                      <span>Manage Event</span>
+                      <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    </Button>
+                  </Link>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => handleDeleteHackathon(h.id, h.title)}
+                    className="text-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-1" />
+                    <span>Delete</span>
                   </Button>
-                </Link>
+                </div>
               </CardHeader>
 
               <CardContent className="space-y-3 text-xs text-graphite-300">

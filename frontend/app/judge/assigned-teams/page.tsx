@@ -46,7 +46,7 @@ export default function JudgeAssignedTeamsPage() {
   const filteredTeams = teams.filter((t) => {
     const matchesSearch =
       t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.submission?.project_title.toLowerCase().includes(search.toLowerCase());
+      Boolean(t.submission?.project_title?.toLowerCase().includes(search.toLowerCase()));
     const hasEval = evaluations.find((e) => e.team_id === t.id && e.status === "SUBMITTED");
 
     if (statusFilter === "PENDING") return matchesSearch && !hasEval;

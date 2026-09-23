@@ -141,6 +141,12 @@ class ApiClient {
     });
   }
 
+  async deleteHackathon(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/hackathons/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   async publishResults(hackathonId: string): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/hackathons/${hackathonId}/publish-results`, {
       method: "POST",

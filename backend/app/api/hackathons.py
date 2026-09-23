@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text
 from typing import List
 from app.database import get_db
 from app.models.hackathon import Hackathon
@@ -84,3 +84,24 @@ async def publish_results(
     hackathon.status = "COMPLETED"
     await db.commit()
     return {"message": "Hackathon results published successfully. All evaluations verified."}
+
+@router.delete("/{hackathon_id}")
+async def delete_hackathon(
+    hackathon_id: str,
+    current_user: User = Depends(require_role([UserRole.ORGANIZER])),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(Hackathon).where(Hackathon.id == hackathon_id)
+    result = await db.execute(stmt)
+    hackathon = result.scalar_one_or_none()
+    if not hackathon:
+        raise HTTPException(status_code=404, detail="Hackathon not found")
+
+    # Clean up associated teams, rubrics, submissions, evaluations
+    await db.execute(text("DELETE FROM evaluations WHERE hackathon_id = :hid"), {"hid": hackathon_id})
+    await db.execute(text("DELETE FROM submissions WHERE hackathon_id = :hid"), {"hid": hackathon_id})
+    await db.execute(text("DELETE FROM teams WHERE hackathon_id = :hid"), {"hid": hackathon_id})
+    await db.execute(text("DELETE FROM rubrics WHERE hackathon_id = :hid"), {"hid": hackathon_id})
+    await db.delete(hackathon)
+    await db.commit()
+    return {"message": "Hackathon event deleted successfully by organizer."}

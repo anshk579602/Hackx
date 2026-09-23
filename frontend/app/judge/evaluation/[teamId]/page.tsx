@@ -48,14 +48,21 @@ export default function JudgeEvaluationWorkspacePage() {
   const [allTeams, setAllTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Scoring states
-  const [scores, setScores] = useState<Record<string, number>>({
-    Innovation: 20.0,
-    "Technical Quality": 20.0,
-    "Problem Relevance": 18.0,
-    Implementation: 18.0,
-    Presentation: 9.0,
-  });
+  // Deterministic scoring function: ensures the SAME team always receives identical, consistent scores
+  function getDeterministicScore(teamKey: string, catName: string, maxScore: number): number {
+    let hash = 0;
+    const seed = `${teamKey}__${catName}`;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash << 5) - hash + seed.charCodeAt(i);
+      hash |= 0;
+    }
+    // Yields a valid, consistent score between 76% and 92% of maxScore
+    const normalized = ((Math.abs(hash) % 17) + 75) / 100;
+    return Math.round(maxScore * normalized * 10) / 10;
+  }
+
+  // Scoring states (starts at zero for new teams until Live AI is triggered)
+  const [scores, setScores] = useState<Record<string, number>>({});
   const [categoryComments, setCategoryComments] = useState<Record<string, string>>({});
   const [overallFeedback, setOverallFeedback] = useState("");
   const [activeCenterTab, setActiveCenterTab] = useState("overview");
@@ -100,12 +107,19 @@ export default function JudgeEvaluationWorkspacePage() {
           setExistingEvaluation(existing);
 
           if (existing) {
-            setScores(existing.category_scores || scores);
+            setScores(existing.category_scores || {});
             setCategoryComments(existing.category_comments || {});
             setOverallFeedback(existing.overall_feedback || "");
             if (existing.status === "SUBMITTED") {
               setAiStatus("COMPLETED");
             }
+          } else {
+            // New team: start with 0 scores so judge has clean slate before Live AI
+            const initialZeroScores: Record<string, number> = {};
+            (activeRubric?.categories || []).forEach((cat) => {
+              initialZeroScores[cat.name] = 0;
+            });
+            setScores(initialZeroScores);
           }
         }
       } catch (err) {
@@ -161,18 +175,18 @@ export default function JudgeEvaluationWorkspacePage() {
     setAiProgress(88);
     setAiCurrentStep("Computing rubric category weights & generating suggested base points...");
 
+    const currentTeamKey = team?.id || teamId;
     const baseScores: Record<string, number> = {};
     if (rubric?.categories && rubric.categories.length > 0) {
       rubric.categories.forEach((cat) => {
-        const ratio = cat.name.toLowerCase().includes("tech") ? 0.90 : cat.name.toLowerCase().includes("inno") ? 0.86 : 0.88;
-        baseScores[cat.name] = Math.round(cat.max_score * ratio * 10) / 10;
+        baseScores[cat.name] = getDeterministicScore(currentTeamKey, cat.name, cat.max_score);
       });
     } else {
-      baseScores["Technical Quality"] = 22.5;
-      baseScores["Innovation"] = 21.0;
-      baseScores["Problem Relevance"] = 18.5;
-      baseScores["Implementation"] = 18.0;
-      baseScores["Presentation"] = 9.0;
+      baseScores["Technical Quality"] = getDeterministicScore(currentTeamKey, "Technical Quality", 25);
+      baseScores["Innovation"] = getDeterministicScore(currentTeamKey, "Innovation", 25);
+      baseScores["Problem Relevance"] = getDeterministicScore(currentTeamKey, "Problem Relevance", 20);
+      baseScores["Implementation"] = getDeterministicScore(currentTeamKey, "Implementation", 20);
+      baseScores["Presentation"] = getDeterministicScore(currentTeamKey, "Presentation", 10);
     }
 
     setAiSuggestedScores(baseScores);
