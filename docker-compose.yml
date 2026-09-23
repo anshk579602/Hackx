@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: hackjudge-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hackjudge
+      POSTGRES_USER: hackjudge
+      POSTGRES_PASSWORD: hackjudge_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hackjudge -d hackjudge"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hackjudge-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://hackjudge:hackjudge_secret@db:5432/hackjudge
+      - SECRET_KEY=super-secret-jwt-key-verijudge-ai-2026
+      - DEMO_MODE=True
+      - BLOCKCHAIN_NETWORK=Polygon Amoy (Testnet)
+      - POLYGON_AMOY_RPC=https://rpc-amoy.polygon.technology/
+      - ANCHOR_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+      - ANCHOR_WALLET_PRIVATE_KEY=
+      - AI_PROVIDER=mock
+    command: >
+      sh -c "python -c 'import asyncio; from app.database import init_db; from app.seed_data import seed_database; asyncio.run(init_db()); asyncio.run(seed_database())' && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hackjudge-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+      - PORT=3000
+
+volumes:
+  postgres_data:
