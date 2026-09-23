@@ -25,7 +25,10 @@ import {
   Terminal,
   Eye,
   EyeOff,
-  ChevronDown
+  Zap,
+  Flame,
+  Radio,
+  Cpu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,63 +52,65 @@ interface RoleConfig {
   registerLabel: string;
   registerUrl: string;
   placeholderEmail: string;
+  demoRole: "participant" | "organizer" | "judge";
 }
 
 const ROLE_CONFIGS: Record<RoleType, RoleConfig> = {
   PARTICIPANT: {
-    title: "Participant Squad Console",
-    badge: "HACKER & SQUAD CONSOLE",
-    subtitle: "Manage teams, submit code repositories, define atomic claims, and view verified results.",
+    title: "Participant Portal",
+    badge: "STUDENT & DEVELOPER CONSOLE",
+    subtitle: "Form teams up to 6 members, submit GitHub repositories, explore live hackathons, and inspect verified scores.",
     themeColor: "emerald",
     accentBorder: "border-emerald-500/40",
     accentBg: "bg-emerald-500/10",
     accentText: "text-emerald-400",
-    glowClass: "shadow-[0_0_35px_rgba(16,185,129,0.18)]",
-    buttonClass: "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30 text-white",
+    glowClass: "shadow-[0_0_40px_rgba(16,185,129,0.22)]",
+    buttonClass: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-600/30 text-white",
     icon: <Code2 className="w-5 h-5 text-emerald-400" />,
-    heroBadge: "SQUAD LAUNCHPAD",
-    heroHeading: "Build, Submit & Verify Your Hackathon Squad",
-    heroSubtitle: "Form your squad with unique join codes, submit GitHub repos with atomic claims, and view cryptographic scores.",
+    heroBadge: "PARTICIPANT ARENA",
+    heroHeading: "Build, Submit & Verify Your Hackathon Project",
+    heroSubtitle: "Register with up to 6 teammates, track live stages from submission to scoring, and view tamper-proof blockchain proofs.",
     featurePills: [
       {
         icon: <Users className="w-4 h-4 text-emerald-400" />,
-        title: "Squad Roster & Join Codes",
-        desc: "Generate instant 6-character team codes to invite co-hackers."
+        title: "6-Member Team Registration",
+        desc: "Add your team leader and up to 5 teammates in one single seamless registration."
       },
       {
         icon: <FileCheck className="w-4 h-4 text-emerald-400" />,
-        title: "Deterministic AST Claims",
-        desc: "Propose atomic technical propositions verified directly against code."
+        title: "Deterministic AST Evidence",
+        desc: "Atomic claims verified directly against code commits with zero hallucination."
       },
       {
         icon: <Trophy className="w-4 h-4 text-emerald-400" />,
-        title: "Cryptographic Results",
-        desc: "Official category score breakdowns backed by Polygon testnet hashes."
+        title: "Polygon Amoy Proofs",
+        desc: "Official category breakdown scores permanently locked with cryptographic hashes."
       }
     ],
-    registerLabel: "Need a squad? Register New Participant Squad →",
+    registerLabel: "New hacker? Register as Participant →",
     registerUrl: "/register?role=PARTICIPANT",
-    placeholderEmail: "alex.hacker@squad.io"
+    placeholderEmail: "participant@verijudge.demo",
+    demoRole: "participant"
   },
   ORGANIZER: {
     title: "Organiser Command Center",
     badge: "ADMIN & INTEGRITY PROTOCOL",
-    subtitle: "Launch hackathons, configure immutable rubrics, audit live cryptographic anchors, and publish results.",
+    subtitle: "Host live hackathons, configure immutable rubrics, audit live cryptographic anchors, and view real-time score feeds.",
     themeColor: "indigo",
     accentBorder: "border-indigo-500/40",
     accentBg: "bg-indigo-500/10",
     accentText: "text-indigo-400",
-    glowClass: "shadow-[0_0_35px_rgba(99,102,241,0.22)]",
-    buttonClass: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30 text-white",
+    glowClass: "shadow-[0_0_40px_rgba(99,102,241,0.25)]",
+    buttonClass: "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-indigo-600/30 text-white",
     icon: <ShieldCheck className="w-5 h-5 text-indigo-400" />,
     heroBadge: "COMMAND CENTER",
-    heroHeading: "Total Hackathon Integrity & Orchestration",
-    heroSubtitle: "Host competitive challenges with automated scoring guardrails, cross-judge anomaly audits, and on-chain anchoring.",
+    heroHeading: "Total Hackathon Orchestration & Evidence Auditing",
+    heroSubtitle: "Host competitive hackathons with automated scoring guardrails, cross-judge anomaly audits, and live blockchain anchoring.",
     featurePills: [
       {
         icon: <ShieldCheck className="w-4 h-4 text-indigo-400" />,
         title: "Keccak-256 On-Chain Anchors",
-        desc: "Cryptographically seal finalized evaluations onto Polygon blockchain."
+        desc: "Cryptographically seal finalized evaluations onto Polygon testnet."
       },
       {
         icon: <Layers className="w-4 h-4 text-indigo-400" />,
@@ -120,47 +125,49 @@ const ROLE_CONFIGS: Record<RoleType, RoleConfig> = {
     ],
     registerLabel: "Hosting a hackathon? Register as Organiser →",
     registerUrl: "/register?role=ORGANIZER",
-    placeholderEmail: "director@techcouncil.org"
+    placeholderEmail: "organizer@verijudge.demo",
+    demoRole: "organizer"
   },
   JUDGE: {
     title: "Judicial Evaluation Chamber",
     badge: "VERIFIED EVALUATOR BENCH",
-    subtitle: "Inspect AST code claims, score projects with fine-grained rubric sliders, and fulfill guardrail checks.",
+    subtitle: "Run live AI telemetry scanners, inspect verifiable AST code claims, adjust rubric sliders, and lock points permanently.",
     themeColor: "amber",
     accentBorder: "border-amber-500/40",
     accentBg: "bg-amber-500/10",
     accentText: "text-amber-400",
-    glowClass: "shadow-[0_0_35px_rgba(245,158,11,0.18)]",
-    buttonClass: "bg-amber-600 hover:bg-amber-500 shadow-amber-600/30 text-white",
+    glowClass: "shadow-[0_0_40px_rgba(245,158,11,0.22)]",
+    buttonClass: "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 shadow-amber-600/30 text-white",
     icon: <Gavel className="w-5 h-5 text-amber-400" />,
     heroBadge: "EVALUATOR BENCH",
-    heroHeading: "Evidence-Backed Evaluation Workspace",
-    heroSubtitle: "Review assigned teams with multi-model claim verification, sticky rubric criteria sliders, and justification guardrails.",
+    heroHeading: "Evidence-Backed Live Evaluation Workspace",
+    heroSubtitle: "Evaluate assigned teams with on-demand AI telemetry scans, consistent deterministic base scores, and Keccak-256 point locking.",
     featurePills: [
       {
         icon: <Terminal className="w-4 h-4 text-amber-400" />,
-        title: "AST Evidence Verification",
-        desc: "Direct verification of technical claims against repository commits."
+        title: "Live AI Telemetry Scan",
+        desc: "Watch the AI engine parse repository AST and verify technical claims live."
       },
       {
-        icon: <Scale className="w-4 h-4 text-amber-400" />,
-        title: "Autonomous Score Guardrails",
-        desc: "Non-overriding justification alerts for high scores on unsupported claims."
+        icon: <Cpu className="w-4 h-4 text-amber-400" />,
+        title: "Deterministic Scoring",
+        desc: "Same team always receives consistent suggested baseline points without variance."
       },
       {
         icon: <Gavel className="w-4 h-4 text-amber-400" />,
-        title: "Authoritative Human Decision",
-        desc: "100% human-controlled scoring preserved with zero automated overrides."
+        title: "Authoritative Human Locking",
+        desc: "Judges retain 100% final authority to adjust sliders and lock points to chain."
       }
     ],
     registerLabel: "Invited to evaluate? Create Judge Account →",
     registerUrl: "/register?role=JUDGE",
-    placeholderEmail: "judge.elena@institution.edu"
+    placeholderEmail: "judge@verijudge.demo",
+    demoRole: "judge"
   }
 };
 
 export default function HomePage() {
-  const { user, login } = useAuth();
+  const { user, login, demoLogin } = useAuth();
 
   // Splash Screen State
   const [showSplash, setShowSplash] = useState(true);
@@ -175,12 +182,12 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Splash animation progression (stays on screen comfortably for ~4.8 seconds)
+  // Splash progression
   useEffect(() => {
-    const t1 = setTimeout(() => setSplashStep(1), 1200);
-    const t2 = setTimeout(() => setSplashStep(2), 2500);
-    const t3 = setTimeout(() => setSplashStep(3), 3700);
-    const t4 = setTimeout(() => setShowSplash(false), 4800);
+    const t1 = setTimeout(() => setSplashStep(1), 1000);
+    const t2 = setTimeout(() => setSplashStep(2), 2200);
+    const t3 = setTimeout(() => setSplashStep(3), 3400);
+    const t4 = setTimeout(() => setShowSplash(false), 4400);
 
     return () => {
       clearTimeout(t1);
@@ -209,9 +216,29 @@ export default function HomePage() {
     }
   };
 
+  const handleDemoSignIn = async (role: "participant" | "organizer" | "judge") => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await demoLogin(role);
+    } catch (err: any) {
+      setError(err.message || "Demo sign-in failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#06080d] text-graphite-100 flex flex-col relative overflow-hidden select-none">
-      {/* 1. CINEMATIC SPLASH SCREEN (SOLID OPAQUE BACKGROUND, ONLY "HACKX" WITH EXTENDED DISPLAY) */}
+    <div className="min-h-screen bg-[#030712] text-graphite-100 flex flex-col relative overflow-hidden select-none">
+      {/* Dynamic Ambient Mesh Lights */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.18),rgba(99,102,241,0.12),transparent_70%)] pointer-events-none blur-3xl z-0" />
+      <div className="absolute top-1/3 -right-48 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 -left-48 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Cyber Grid Lines */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_40%,#000_70%,transparent_100%)] pointer-events-none z-0" />
+
+      {/* 1. CINEMATIC SPLASH SCREEN */}
       <AnimatePresence>
         {showSplash && (
           <motion.div
@@ -219,22 +246,11 @@ export default function HomePage() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.02 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
-            className="fixed inset-0 z-[99999] flex flex-col items-center justify-center px-6 overflow-hidden select-none"
-            style={{ backgroundColor: "#06080d" }}
+            className="fixed inset-0 z-[99999] flex flex-col items-center justify-center px-6 overflow-hidden select-none bg-[#030712]"
           >
-            {/* 100% Solid Non-Transparent Foundation Layer */}
-            <div className="absolute inset-0 bg-[#06080d] pointer-events-none" />
-
-            {/* Ambient Nebula Glow - Contained within solid dark canvas */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.22)_0%,rgba(16,185,129,0.08)_40%,#06080d_75%)] pointer-events-none" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293d20_1px,transparent_1px),linear-gradient(to_bottom,#1f293d20_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
-
-            {/* Glowing Aura Rings */}
-            <motion.div
-              animate={{ scale: [1, 1.25, 1], opacity: [0.35, 0.65, 0.35] }}
-              transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
-              className="absolute w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none"
-            />
+            {/* Ambient Nebula Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.2)_0%,rgba(99,102,241,0.12)_35%,#030712_75%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293d25_1px,transparent_1px),linear-gradient(to_bottom,#1f293d25_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none" />
 
             <div className="relative z-10 flex flex-col items-center text-center space-y-6 max-w-3xl">
               {/* Animated Shield Insignia */}
@@ -244,23 +260,23 @@ export default function HomePage() {
                 transition={{ duration: 0.8, type: "spring", stiffness: 140 }}
                 className="relative group"
               >
-                <div className="absolute -inset-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 rounded-3xl blur-2xl opacity-60 animate-pulse" />
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-graphite-900 border-2 border-indigo-400/40 flex items-center justify-center shadow-2xl shadow-indigo-500/40">
-                  <ShieldCheck className="w-12 h-12 sm:w-14 sm:h-14 text-indigo-400" />
-                  <Gavel className="w-6 h-6 sm:w-7 sm:h-7 text-amber-400 absolute bottom-3 right-3 drop-shadow-md" />
+                <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 rounded-3xl blur-2xl opacity-60 animate-pulse" />
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-graphite-900 border-2 border-emerald-400/50 flex items-center justify-center shadow-2xl shadow-emerald-500/40">
+                  <ShieldCheck className="w-12 h-12 sm:w-14 sm:h-14 text-emerald-400" />
+                  <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-teal-300 absolute -top-1 -right-1 drop-shadow-md animate-spin" style={{ animationDuration: "8s" }} />
                 </div>
               </motion.div>
 
-              {/* ONLY PORTAL NAME: HACKX ANIMATION */}
+              {/* BRANDING: HACK with BIGGER X */}
               <motion.div
                 initial={{ opacity: 0, y: 30, letterSpacing: "0.2em" }}
                 animate={{ opacity: 1, y: 0, letterSpacing: "-0.03em" }}
                 transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
                 className="space-y-2"
               >
-                <h1 className="text-6xl sm:text-8xl md:text-9xl font-black uppercase tracking-tight select-none">
-                  <span className="text-white drop-shadow-lg">HACK</span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-emerald-400 drop-shadow-[0_0_40px_rgba(99,102,241,0.5)]">
+                <h1 className="text-6xl sm:text-8xl md:text-9xl font-black uppercase tracking-tight select-none flex items-center justify-center">
+                  <span className="text-white drop-shadow-xl">HACK</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 via-teal-300 to-cyan-400 text-7xl sm:text-9xl md:text-[11rem] font-black inline-block transform scale-125 ml-2 sm:ml-4 drop-shadow-[0_0_55px_rgba(16,185,129,0.7)] animate-pulse">
                     X
                   </span>
                 </h1>
@@ -269,9 +285,9 @@ export default function HomePage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
-                  className="flex items-center justify-center gap-2 font-mono text-xs sm:text-sm text-indigo-300 tracking-wider uppercase font-semibold"
+                  className="flex items-center justify-center gap-2 font-mono text-xs sm:text-sm text-emerald-300 tracking-wider uppercase font-semibold"
                 >
-                  <Sparkles className="w-4 h-4 text-emerald-400 animate-spin" style={{ animationDuration: "6s" }} />
+                  <Sparkles className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: "6s" }} />
                   <span>Verifiable Evaluation Protocol • Sovereign AI Architecture</span>
                 </motion.div>
               </motion.div>
@@ -287,8 +303,8 @@ export default function HomePage() {
                   <motion.div
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
-                    transition={{ duration: 4.4, ease: "easeInOut" }}
-                    className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 rounded-full"
+                    transition={{ duration: 4.0, ease: "easeInOut" }}
+                    className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 rounded-full"
                   />
                 </div>
 
@@ -299,7 +315,7 @@ export default function HomePage() {
                     {splashStep === 2 && "[ SYNCHRONIZING WITH IMMUTABLE LEDGER ]"}
                     {splashStep >= 3 && "[ SECURE MATRIX READY • WELCOME TO HACKX ]"}
                   </span>
-                  <span className="text-emerald-400">
+                  <span className="text-emerald-400 font-bold">
                     {splashStep >= 3 ? "100% OK" : "SYNCING"}
                   </span>
                 </div>
@@ -314,10 +330,10 @@ export default function HomePage() {
               >
                 <button
                   onClick={() => setShowSplash(false)}
-                  className="px-6 py-2.5 rounded-full border border-indigo-500/40 bg-indigo-950/60 hover:bg-indigo-900/80 text-xs font-mono text-indigo-200 hover:text-white transition-all flex items-center gap-2 group shadow-lg shadow-indigo-950/50"
+                  className="px-6 py-2.5 rounded-full border border-emerald-500/40 bg-emerald-950/60 hover:bg-emerald-900/80 text-xs font-mono text-emerald-200 hover:text-white transition-all flex items-center gap-2 group shadow-lg shadow-emerald-950/50"
                 >
                   <span>Enter HackX Now</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
                 </button>
               </motion.div>
             </div>
@@ -325,26 +341,36 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* 2. MAIN INTERFACE (OPENS WITH 3 DEDICATED SECTIONS / ROLE TOGGLE) */}
+      {/* 2. MAIN INTERFACE */}
       <div className="flex-1 flex flex-col justify-center items-center px-4 sm:px-6 py-12 max-w-7xl mx-auto w-full relative z-10">
         {/* Top Header Hero Title */}
-        <div className="w-full max-w-5xl text-center space-y-3 mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-graphite-900 border border-graphite-800 text-xs font-mono text-indigo-400">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>HackX Sovereign Evaluation Platform</span>
-          </div>
+        <div className="w-full max-w-5xl text-center space-y-4 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-xs font-mono text-emerald-300 shadow-lg shadow-emerald-950/30"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>HackX Sovereign Evaluation Protocol • Live on Polygon Amoy</span>
+          </motion.div>
 
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
-            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-emerald-400">HACKX</span>
-          </h2>
-          <p className="text-xs sm:text-sm text-graphite-400 max-w-lg mx-auto">
-            Choose your access role below to enter your specialized console or register your account.
+          {/* Hero Branding with Bold & Enlarged X */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight uppercase select-none flex items-center justify-center">
+            <span>WELCOME TO HACK</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 via-teal-300 to-cyan-400 text-5xl sm:text-7xl lg:text-8xl font-black inline-block transform scale-125 ml-1.5 sm:ml-2 drop-shadow-[0_0_35px_rgba(16,185,129,0.6)]">
+              X
+            </span>
+          </h1>
+
+          <p className="text-xs sm:text-sm text-graphite-300 max-w-2xl mx-auto leading-relaxed">
+            Eliminating empty pitch claims, scoring variance, and database tampering with multi-model AST code verification and cryptographic blockchain anchoring.
           </p>
         </div>
 
         {/* 3-WAY ROLE TOGGLE BAR (Participant | Organiser | Judge) */}
         <div className="w-full max-w-5xl mb-8">
-          <div className="p-1.5 rounded-2xl bg-graphite-900 border border-graphite-800 shadow-xl grid grid-cols-3 gap-1.5">
+          <div className="p-1.5 rounded-2xl bg-graphite-900/90 border border-graphite-800 shadow-2xl grid grid-cols-3 gap-1.5 backdrop-blur-xl">
             {/* Toggle 1: Participant */}
             <button
               type="button"
@@ -353,7 +379,7 @@ export default function HomePage() {
                 setError(null);
               }}
               className={cn(
-                "relative py-3.5 px-3 rounded-xl font-mono text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2",
+                "relative py-3.5 px-3 rounded-xl font-mono text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2",
                 activeRole === "PARTICIPANT"
                   ? "bg-gradient-to-r from-emerald-600/30 to-teal-600/20 text-emerald-300 border border-emerald-500/50 shadow-md shadow-emerald-950"
                   : "text-graphite-400 hover:text-graphite-200 hover:bg-graphite-850/60"
@@ -377,7 +403,7 @@ export default function HomePage() {
                 setError(null);
               }}
               className={cn(
-                "relative py-3.5 px-3 rounded-xl font-mono text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2",
+                "relative py-3.5 px-3 rounded-xl font-mono text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2",
                 activeRole === "ORGANIZER"
                   ? "bg-gradient-to-r from-indigo-600/30 to-violet-600/20 text-indigo-300 border border-indigo-500/50 shadow-md shadow-indigo-950"
                   : "text-graphite-400 hover:text-graphite-200 hover:bg-graphite-850/60"
@@ -401,7 +427,7 @@ export default function HomePage() {
                 setError(null);
               }}
               className={cn(
-                "relative py-3.5 px-3 rounded-xl font-mono text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2",
+                "relative py-3.5 px-3 rounded-xl font-mono text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2",
                 activeRole === "JUDGE"
                   ? "bg-gradient-to-r from-amber-600/30 to-yellow-600/20 text-amber-300 border border-amber-500/50 shadow-md shadow-amber-950"
                   : "text-graphite-400 hover:text-graphite-200 hover:bg-graphite-850/60"
@@ -481,7 +507,7 @@ export default function HomePage() {
                 {config.featurePills.map((feat, idx) => (
                   <div
                     key={idx}
-                    className="p-3.5 rounded-2xl bg-graphite-850/80 border border-graphite-750 flex items-start gap-3.5"
+                    className="p-3.5 rounded-2xl bg-graphite-850/80 border border-graphite-750 flex items-start gap-3.5 hover:border-graphite-600 transition-colors"
                   >
                     <div className="mt-0.5 p-2 rounded-xl bg-graphite-900 border border-graphite-700">
                       {feat.icon}
@@ -531,7 +557,7 @@ export default function HomePage() {
                   Sign in to {config.title}
                 </h3>
                 <p className="text-xs text-graphite-400">
-                  Enter your registered credentials to access your dashboard.
+                  Enter your credentials below or use 1-click instant demo access.
                 </p>
               </div>
 
@@ -542,6 +568,47 @@ export default function HomePage() {
                   <span>{error}</span>
                 </div>
               )}
+
+              {/* 1-Click Instant Demo Access Strip */}
+              <div className="p-3 rounded-2xl bg-graphite-950/80 border border-graphite-800 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-mono">
+                  <span className="text-graphite-400 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Instant Demo Sign-In:</span>
+                  </span>
+                  <span className="text-emerald-400 font-semibold">1-Click</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDemoSignIn("participant")}
+                    disabled={isLoading}
+                    className="py-1.5 px-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium transition-all flex items-center justify-center gap-1"
+                  >
+                    <Code2 className="w-3 h-3 text-emerald-400" />
+                    <span>Hacker</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoSignIn("judge")}
+                    disabled={isLoading}
+                    className="py-1.5 px-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-medium transition-all flex items-center justify-center gap-1"
+                  >
+                    <Gavel className="w-3 h-3 text-amber-400" />
+                    <span>Judge</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoSignIn("organizer")}
+                    disabled={isLoading}
+                    className="py-1.5 px-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-medium transition-all flex items-center justify-center gap-1"
+                  >
+                    <ShieldCheck className="w-3 h-3 text-indigo-400" />
+                    <span>Organiser</span>
+                  </button>
+                </div>
+              </div>
 
               {/* Authentication Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -588,7 +655,7 @@ export default function HomePage() {
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="rounded border-graphite-700 bg-graphite-800 text-indigo-600 focus:ring-0"
+                      className="rounded border-graphite-700 bg-graphite-800 text-emerald-500 focus:ring-0"
                     />
                     <span>Remember session</span>
                   </label>
@@ -637,8 +704,9 @@ export default function HomePage() {
         {/* 3. PLATFORM ARCHITECTURAL PILLARS */}
         <div className="w-full max-w-5xl mt-20 pt-16 border-t border-graphite-800/80 space-y-8">
           <div className="text-center space-y-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-indigo-400 font-semibold">
-              The HackX Protocol
+            <span className="text-xs font-mono uppercase tracking-widest text-emerald-400 font-semibold flex items-center justify-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>The HackX Sovereign Protocol</span>
             </span>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Three Pillars of Transparent Hackathon Evaluation
@@ -649,33 +717,33 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-2xl bg-graphite-900 border border-graphite-800 space-y-3">
+            <div className="p-6 rounded-2xl bg-graphite-900/90 border border-graphite-800 hover:border-emerald-500/40 transition-all space-y-3 shadow-lg">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                 <Code2 className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">Multi-Model Claim Extraction</h4>
+              <h4 className="text-sm font-bold text-white">Multi-Model AST Extraction</h4>
               <p className="text-xs text-graphite-400 leading-relaxed">
                 Atomic technical propositions parsed directly from repository AST trees and commit histories with zero hallucinations.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-graphite-900 border border-graphite-800 space-y-3">
+            <div className="p-6 rounded-2xl bg-graphite-900/90 border border-graphite-800 hover:border-indigo-500/40 transition-all space-y-3 shadow-lg">
               <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
                 <Scale className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">Autonomous Score Guardrails</h4>
+              <h4 className="text-sm font-bold text-white">Live AI Telemetry Scanner</h4>
               <p className="text-xs text-graphite-400 leading-relaxed">
-                Flags scoring divergences and prompts written evaluator justifications when scores mismatch repository evidence.
+                Judges trigger real-time AI scans, receive deterministic baseline scores, and verify claims with complete transparency.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-graphite-900 border border-graphite-800 space-y-3">
+            <div className="p-6 rounded-2xl bg-graphite-900/90 border border-graphite-800 hover:border-amber-500/40 transition-all space-y-3 shadow-lg">
               <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-white">Polygon Keccak-256 Anchoring</h4>
               <p className="text-xs text-graphite-400 leading-relaxed">
-                Finalized rubric scores and evidence hashes are anchored to the blockchain, making unauthorized database modifications immediately evident.
+                Finalized rubric scores and evidence hashes are anchored to the blockchain, making unauthorized score changes immediately evident.
               </p>
             </div>
           </div>

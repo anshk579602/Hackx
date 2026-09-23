@@ -82,8 +82,8 @@ export function Navbar() {
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-lg tracking-tight text-white uppercase">
-                  HACK<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">X</span>
+                <span className="font-black text-lg tracking-tight text-white uppercase flex items-center">
+                  HACK<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 text-xl font-black inline-block transform scale-125 ml-0.5 drop-shadow-[0_0_10px_rgba(16,185,129,0.6)]">X</span>
                 </span>
                 <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-semibold">
                   v2.4
