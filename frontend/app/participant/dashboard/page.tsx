@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
-import { Team, Submission } from "@/lib/types";
+import { Team, Submission, Hackathon } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -119,6 +119,25 @@ export default function ParticipantDashboard() {
                   </Link>
                 </div>
               </div>
+
+              {/* 3 Step Process Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-graphite-800/80">
+                <div className="p-4 rounded-2xl bg-graphite-950/60 border border-graphite-800 space-y-1">
+                  <div className="text-xs font-mono font-bold text-emerald-400">Step 1</div>
+                  <div className="text-sm font-bold text-white">Squad Formation</div>
+                  <div className="text-xs text-graphite-400">Select a hosted event and register your squad name.</div>
+                </div>
+                <div className="p-4 rounded-2xl bg-graphite-950/60 border border-graphite-800 space-y-1">
+                  <div className="text-xs font-mono font-bold text-emerald-400">Step 2</div>
+                  <div className="text-sm font-bold text-white">Project Submission</div>
+                  <div className="text-xs text-graphite-400">Enter GitHub repo link and atomic technical claims.</div>
+                </div>
+                <div className="p-4 rounded-2xl bg-graphite-950/60 border border-graphite-800 space-y-1">
+                  <div className="text-xs font-mono font-bold text-emerald-400">Step 3</div>
+                  <div className="text-sm font-bold text-white">AI Evidence Audit</div>
+                  <div className="text-xs text-graphite-400">AI maps repository AST to verify all pitch claims.</div>
+                </div>
+              </div>
             </div>
           </Card>
 
@@ -173,26 +192,6 @@ export default function ParticipantDashboard() {
             )}
           </div>
         </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-graphite-800/80">
-              <div className="p-4 rounded-2xl bg-graphite-950/60 border border-graphite-800 space-y-1">
-                <div className="text-xs font-mono font-bold text-emerald-400">Step 1</div>
-                <div className="text-sm font-bold text-white">Squad Formation</div>
-                <div className="text-xs text-graphite-400">Invite teammates and assign Frontend, Backend, or ML roles.</div>
-              </div>
-              <div className="p-4 rounded-2xl bg-graphite-950/60 border border-graphite-800 space-y-1">
-                <div className="text-xs font-mono font-bold text-emerald-400">Step 2</div>
-                <div className="text-sm font-bold text-white">Project Submission</div>
-                <div className="text-xs text-graphite-400">Enter GitHub repo link and atomic technical claims.</div>
-              </div>
-              <div className="p-4 rounded-2xl bg-graphite-950/60 border border-graphite-800 space-y-1">
-                <div className="text-xs font-mono font-bold text-emerald-400">Step 3</div>
-                <div className="text-sm font-bold text-white">AI Evidence Audit</div>
-                <div className="text-xs text-graphite-400">AI maps repository AST to verify all pitch claims.</div>
-              </div>
-            </div>
-          </div>
-        </Card>
       )}
 
       {/* Team and Submission Summary Cards */}
