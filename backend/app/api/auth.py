@@ -68,9 +68,9 @@ async def demo_login(role: str, db: AsyncSession = Depends(get_db)):
     Supports role: 'organizer', 'judge', 'participant'
     """
     role_email_map = {
-        "organizer": "organizer@verijudge.demo",
-        "judge": "judge@verijudge.demo",
-        "participant": "participant@verijudge.demo",
+        "organizer": "organizer@hackx.demo",
+        "judge": "judge@hackx.demo",
+        "participant": "participant@hackx.demo",
     }
     target_email = role_email_map.get(role.lower())
     if not target_email:
@@ -93,3 +93,30 @@ async def demo_login(role: str, db: AsyncSession = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+@router.get("/judges")
+async def get_judges(db: AsyncSession = Depends(get_db)):
+    """Return all registered judges and their evaluation counts from database."""
+    from app.models.evaluation import Evaluation, EvaluationStatus
+    stmt = select(User).where(User.role == UserRole.JUDGE)
+    result = await db.execute(stmt)
+    judges = result.scalars().all()
+
+    judges_data = []
+    for j in judges:
+        count_stmt = select(Evaluation).where(
+            Evaluation.judge_id == j.id,
+            Evaluation.status == EvaluationStatus.SUBMITTED
+        )
+        count_res = await db.execute(count_stmt)
+        completed_count = len(count_res.scalars().all())
+
+        judges_data.append({
+            "id": j.id,
+            "name": j.full_name,
+            "email": j.email,
+            "org": j.organization or "HackX Accredited Judge",
+            "specialty": "Technical & Innovation Evaluation",
+            "completed": completed_count
+        })
+    return judges_data

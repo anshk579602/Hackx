@@ -27,13 +27,18 @@ export default function ParticipantDashboard() {
   const { user } = useAuth();
   const [team, setTeam] = useState<Team | null>(null);
   const [submission, setSubmission] = useState<Submission | null>(null);
+  const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const myTeam = await api.getMyTeam();
+        const [myTeam, hacks] = await Promise.all([
+          api.getMyTeam(),
+          api.listHackathons()
+        ]);
         setTeam(myTeam);
+        setHackathons(hacks || []);
         if (myTeam) {
           const mySub = await api.getMySubmission();
           setSubmission(mySub);
@@ -83,36 +88,91 @@ export default function ParticipantDashboard() {
 
       {/* Onboarding Guide if no team exists */}
       {!team && (
-        <Card className="border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-950/20 via-graphite-900 to-graphite-900 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-2 max-w-xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-medium">
-                  <Rocket className="w-3.5 h-3.5" />
-                  <span>Participant Setup Required</span>
+        <div className="space-y-6">
+          <Card className="border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-950/20 via-graphite-900 to-graphite-900 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-2 max-w-xl">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-medium">
+                    <Rocket className="w-3.5 h-3.5" />
+                    <span>Participant Setup Required</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white">
+                    Join or Form Your Team to Get Started
+                  </h2>
+                  <p className="text-sm text-graphite-300 leading-relaxed">
+                    To submit your repository and claim verification, create a new squad for an active hosted hackathon or join an existing team with an invite code.
+                  </p>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-white">
-                  Join or Form Your Team to Get Started
-                </h2>
-                <p className="text-sm text-graphite-300 leading-relaxed">
-                  To submit your repository and claim verification, create a new squad or join an existing team using your team lead&apos;s 6-character invite code.
-                </p>
-              </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 shrink-0">
-                <Link href="/participant/team">
-                  <Button size="lg" variant="emerald" className="gap-2 shadow-xl shadow-emerald-600/30 font-semibold px-6 py-3.5">
-                    <PlusCircle className="w-5 h-5" />
-                    <span>Create Team</span>
-                  </Button>
-                </Link>
-                <Link href="/participant/team">
-                  <Button size="lg" variant="outline" className="border-graphite-700 text-graphite-200">
-                    <span>Join with Code</span>
-                  </Button>
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+                  <Link href="/participant/team">
+                    <Button size="lg" variant="emerald" className="gap-2 shadow-xl shadow-emerald-600/30 font-semibold px-6 py-3.5">
+                      <PlusCircle className="w-5 h-5" />
+                      <span>Form Squad</span>
+                    </Button>
+                  </Link>
+                  <Link href="/participant/team">
+                    <Button size="lg" variant="outline" className="border-graphite-700 text-graphite-200">
+                      <span>Join with Code</span>
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
+          </Card>
+
+          {/* Active Hosted Hackathons Showcase */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-amber-400" />
+                <span>Hosted Hackathons Open for Registration</span>
+              </h3>
+              <Badge variant="indigo">
+                {hackathons.length} {hackathons.length === 1 ? "Event" : "Events"} Live
+              </Badge>
+            </div>
+
+            {hackathons.length === 0 ? (
+              <div className="p-8 rounded-2xl border border-dashed border-graphite-800 bg-graphite-900/40 text-center space-y-2">
+                <Trophy className="w-8 h-8 text-amber-400/50 mx-auto" />
+                <p className="text-sm font-semibold text-white">No Hackathons Hosted Yet</p>
+                <p className="text-xs text-graphite-400 max-w-sm mx-auto">
+                  Organisers have not published any hackathons yet. As soon as an organiser hosts an event, it will appear here so you can register your squad.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {hackathons.map((h) => (
+                  <div
+                    key={h.id}
+                    className="p-5 rounded-2xl border border-graphite-800 bg-graphite-900/80 hover:border-emerald-500/50 transition-all space-y-3 flex flex-col justify-between"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-bold text-white text-base line-clamp-1">{h.title}</h4>
+                        <Badge variant="success">{h.status || "ACTIVE"}</Badge>
+                      </div>
+                      {h.tagline && (
+                        <p className="text-xs text-emerald-400 font-medium line-clamp-1">{h.tagline}</p>
+                      )}
+                      {h.description && (
+                        <p className="text-xs text-graphite-400 line-clamp-2 leading-relaxed">{h.description}</p>
+                      )}
+                    </div>
+                    <Link href="/participant/team" className="w-full pt-2">
+                      <Button variant="emerald" size="sm" className="w-full gap-1.5 font-medium">
+                        <span>Register Squad</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Button>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-graphite-800/80">
               <div className="p-4 rounded-2xl bg-graphite-950/60 border border-graphite-800 space-y-1">
@@ -266,7 +326,7 @@ export default function ParticipantDashboard() {
       <div className="p-6 rounded-2xl border border-graphite-800 bg-graphite-900/60 space-y-4">
         <h3 className="text-base font-bold text-white flex items-center gap-2">
           <Trophy className="w-4 h-4 text-indigo-400" />
-          <span>HackJudge Participant &amp; Judging Guidelines</span>
+          <span>HackX Participant &amp; Judging Guidelines</span>
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-graphite-300">
           <div className="p-4 rounded-xl bg-graphite-950 border border-graphite-800 space-y-1">

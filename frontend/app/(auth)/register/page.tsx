@@ -83,7 +83,7 @@ export default function RegisterPage() {
             <ShieldCheck className="h-7 w-7 text-white" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-            Create Your HackJudge Account
+            Create Your HackX Account
           </h2>
           <p className="text-xs text-graphite-400 max-w-sm mx-auto">
             Transparent, evidence-based evaluation powered by AI & blockchain.

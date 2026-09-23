@@ -37,7 +37,7 @@ export function ParticipantSidebar() {
           </p>
           <div className="mt-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>InnovateX 2026 Active</span>
+            <span>HackX Arena Active</span>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export function ParticipantSidebar() {
       <div className="p-3 rounded-xl bg-graphite-850/80 border border-graphite-800 text-xs">
         <div className="flex items-center gap-2 text-indigo-400 font-semibold mb-1">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>VeriJudge AI Status</span>
+          <span>HackX AI Engine</span>
         </div>
         <p className="text-[11px] text-graphite-400 leading-relaxed">
           AI Evidence Agent continuously validates submitted repo links and claims.

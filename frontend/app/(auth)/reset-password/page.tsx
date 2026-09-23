@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight">Set new password</h2>
           <p className="text-xs text-graphite-400">
-            Create a secure password for your VeriJudge AI account.
+            Create a secure password for your HackX account.
           </p>
         </div>
 

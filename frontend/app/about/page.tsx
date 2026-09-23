@@ -9,7 +9,7 @@ export default function AboutPage() {
   return (
     <div className="max-w-4xl mx-auto py-16 px-6 space-y-12">
       <div className="space-y-4 text-center">
-        <h1 className="text-4xl font-extrabold text-white">About VeriJudge AI</h1>
+        <h1 className="text-4xl font-extrabold text-white">About HackX</h1>
         <p className="text-base text-graphite-300 max-w-2xl mx-auto">
           Built to guarantee transparent, evidence-based evaluation for global competitive engineering and innovation hackathons.
         </p>
@@ -25,7 +25,7 @@ export default function AboutPage() {
             Traditional hackathon judging often relies on subjective 3-minute pitches. Teams make sweeping claims — such as &quot;our system handles 10,000 concurrent requests&quot; or &quot;we built a custom BERT model from scratch&quot; — which judges cannot realistically verify during hurried Q&amp;A sessions.
           </p>
           <p>
-            VeriJudge AI solves this by introducing automated, deterministic evidence analysis without removing human authority.
+            HackX solves this by introducing automated, deterministic evidence analysis without removing human authority.
           </p>
         </div>
 
@@ -53,7 +53,7 @@ export default function AboutPage() {
       <div className="text-center pt-4">
         <Link href="/login">
           <Button size="lg">
-            <span>Explore the Interactive Demo</span>
+            <span>Enter HackX Platform</span>
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </Link>

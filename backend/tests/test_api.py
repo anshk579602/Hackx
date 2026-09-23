@@ -9,14 +9,14 @@ async def test_health_endpoint():
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
-        assert "HackJudge" in data["service"]
+        assert "HackX" in data["service"]
 
 @pytest.mark.asyncio
 async def test_auth_register_and_login_organizer():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         # Register organizer
         reg_payload = {
-            "email": "lead.organizer@hackjudge.io",
+            "email": "lead.organizer@hackx.io",
             "password": "SecurePassword123!",
             "full_name": "Dr. Sarah Mitchell",
             "role": "ORGANIZER",
@@ -27,11 +27,11 @@ async def test_auth_register_and_login_organizer():
         reg_data = reg_res.json()
         assert "access_token" in reg_data
         assert reg_data["user"]["role"] == "ORGANIZER"
-        assert reg_data["user"]["email"] == "lead.organizer@hackjudge.io"
+        assert reg_data["user"]["email"] == "lead.organizer@hackx.io"
 
         # Login
         login_res = await ac.post("/api/auth/login", json={
-            "email": "lead.organizer@hackjudge.io",
+            "email": "lead.organizer@hackx.io",
             "password": "SecurePassword123!"
         })
         assert login_res.status_code == 200
@@ -46,7 +46,7 @@ async def test_auth_register_and_login_organizer():
 async def test_auth_register_and_login_judge():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         reg_payload = {
-            "email": "principal.judge@hackjudge.io",
+            "email": "principal.judge@hackx.io",
             "password": "JudgeSecretKey456!",
             "full_name": "Elena Rostova",
             "role": "JUDGE",
@@ -57,7 +57,7 @@ async def test_auth_register_and_login_judge():
         assert reg_res.json()["user"]["role"] == "JUDGE"
 
         login_res = await ac.post("/api/auth/login", json={
-            "email": "principal.judge@hackjudge.io",
+            "email": "principal.judge@hackx.io",
             "password": "JudgeSecretKey456!"
         })
         assert login_res.status_code == 200
@@ -67,7 +67,7 @@ async def test_auth_register_and_login_judge():
 async def test_auth_register_and_login_participant():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         reg_payload = {
-            "email": "dev.participant@hackjudge.io",
+            "email": "dev.participant@hackx.io",
             "password": "HackerPassword789!",
             "full_name": "Alex Mercer",
             "role": "PARTICIPANT",
@@ -78,7 +78,7 @@ async def test_auth_register_and_login_participant():
         assert reg_res.json()["user"]["role"] == "PARTICIPANT"
 
         login_res = await ac.post("/api/auth/login", json={
-            "email": "dev.participant@hackjudge.io",
+            "email": "dev.participant@hackx.io",
             "password": "HackerPassword789!"
         })
         assert login_res.status_code == 200
@@ -87,7 +87,7 @@ async def test_auth_register_and_login_participant():
 async def test_duplicate_registration_rejected():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         reg_payload = {
-            "email": "lead.organizer@hackjudge.io",
+            "email": "lead.organizer@hackx.io",
             "password": "AnotherPassword123!",
             "full_name": "Duplicate User",
             "role": "ORGANIZER"
@@ -100,7 +100,7 @@ async def test_duplicate_registration_rejected():
 async def test_invalid_login_rejected():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         res = await ac.post("/api/auth/login", json={
-            "email": "lead.organizer@hackjudge.io",
+            "email": "lead.organizer@hackx.io",
             "password": "WrongPassword!"
         })
         assert res.status_code == 401
@@ -123,7 +123,7 @@ async def test_organizer_can_create_hackathon():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         # Login organizer
         login_res = await ac.post("/api/auth/login", json={
-            "email": "lead.organizer@hackjudge.io",
+            "email": "lead.organizer@hackx.io",
             "password": "SecurePassword123!"
         })
         token = login_res.json()["access_token"]
@@ -152,7 +152,7 @@ async def test_organizer_can_create_hackathon():
 async def test_participant_forbidden_from_creating_hackathon():
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         login_res = await ac.post("/api/auth/login", json={
-            "email": "dev.participant@hackjudge.io",
+            "email": "dev.participant@hackx.io",
             "password": "HackerPassword789!"
         })
         token = login_res.json()["access_token"]

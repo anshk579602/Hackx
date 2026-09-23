@@ -137,7 +137,7 @@ export default function OrganizerIntegrityPage() {
       <div className="p-5 rounded-2xl border border-graphite-800 bg-graphite-850/70 space-y-3 text-xs text-graphite-300">
         <div className="flex items-center gap-2 text-white font-bold">
           <Lock className="w-4 h-4 text-indigo-400" />
-          <span>How HackJudge Tamper Detection Works:</span>
+          <span>How HackX Tamper Detection Works:</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
           <div className="p-3 rounded-xl bg-graphite-900 border border-graphite-800">

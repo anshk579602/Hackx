@@ -379,7 +379,7 @@ export default function PublicEvaluationVerifyPage() {
                   Why is this evaluation tamper-evident?
                 </h4>
                 <p className="text-xs text-graphite-400 leading-relaxed">
-                  When a judge finalizes an evaluation, VeriJudge constructs a canonical JSON string containing the exact scores,
+                  When a judge finalizes an evaluation, HackX constructs a canonical JSON string containing the exact scores,
                   justification hash, evidence bundle hash, and timestamp. It computes the Keccak-256 hash and commits it to the
                   Polygon blockchain. If any database record or score is altered post-evaluation, the live recalculation will
                   instantly fail to match the immutable on-chain record, producing a public tamper alert.

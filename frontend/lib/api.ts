@@ -19,7 +19,7 @@ class ApiClient {
 
   constructor() {
     if (typeof window !== "undefined") {
-      this.token = localStorage.getItem("hackjudge_token");
+      this.token = localStorage.getItem("hackx_token") || localStorage.getItem("hackjudge_token");
     }
   }
 
@@ -27,8 +27,9 @@ class ApiClient {
     this.token = token;
     if (typeof window !== "undefined") {
       if (token) {
-        localStorage.setItem("hackjudge_token", token);
+        localStorage.setItem("hackx_token", token);
       } else {
+        localStorage.removeItem("hackx_token");
         localStorage.removeItem("hackjudge_token");
       }
     }
@@ -36,7 +37,7 @@ class ApiClient {
 
   getToken(): string | null {
     if (!this.token && typeof window !== "undefined") {
-      this.token = localStorage.getItem("hackjudge_token");
+      this.token = localStorage.getItem("hackx_token") || localStorage.getItem("hackjudge_token");
     }
     return this.token;
   }
@@ -105,6 +106,17 @@ class ApiClient {
 
   async getMe(): Promise<User> {
     return this.request<User>("/auth/me");
+  }
+
+  async getJudges(): Promise<Array<{
+    id: string;
+    name: string;
+    email: string;
+    org: string;
+    specialty: string;
+    completed: number;
+  }>> {
+    return this.request<any[]>("/auth/judges");
   }
 
   // Hackathons
