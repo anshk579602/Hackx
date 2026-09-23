@@ -68,9 +68,9 @@ async def demo_login(role: str, db: AsyncSession = Depends(get_db)):
     Supports role: 'organizer', 'judge', 'participant'
     """
     role_email_candidates = {
-        "organizer": ["organizer@hackx.demo", "organizer@verijudge.demo", "250153094@rkgit.edu.in"],
-        "judge": ["judge@hackx.demo", "judge@verijudge.demo"],
-        "participant": ["participant@hackx.demo", "participant@verijudge.demo"],
+        "organizer": ["250153094@rkgit.edu.in", "organizer@hackx.demo", "organizer@verijudge.demo"],
+        "judge": ["dipikamourya@gmail.com", "judge@hackx.demo", "judge@verijudge.demo"],
+        "participant": ["dhanivarshney19@gmail.com", "participant@hackx.demo", "participant@verijudge.demo"],
     }
     candidates = role_email_candidates.get(role.lower())
     if not candidates:

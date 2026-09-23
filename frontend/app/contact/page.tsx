@@ -33,8 +33,8 @@ export default function ContactPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input label="Your Name" placeholder="Alex Rivers" required />
-            <Input label="Email Address" type="email" placeholder="alex@hackathon.org" required />
+            <Input label="Your Name" placeholder="Your Name" required />
+            <Input label="Email Address" type="email" placeholder="you@example.com" required />
             <Input label="Hackathon / Organization" placeholder="HackX 2026 Championship" required />
             <Textarea label="Message" placeholder="Tell us about your judging requirements, expected teams, and dates..." rows={4} required />
             <Button type="submit" variant="primary" className="w-full">

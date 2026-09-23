@@ -28,7 +28,8 @@ import {
   Zap,
   Flame,
   Radio,
-  Cpu
+  Cpu,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -89,7 +90,7 @@ const ROLE_CONFIGS: Record<RoleType, RoleConfig> = {
     ],
     registerLabel: "New hacker? Register as Participant →",
     registerUrl: "/register?role=PARTICIPANT",
-    placeholderEmail: "participant@verijudge.demo",
+    placeholderEmail: "participant@example.com",
     demoRole: "participant"
   },
   ORGANIZER: {
@@ -125,7 +126,7 @@ const ROLE_CONFIGS: Record<RoleType, RoleConfig> = {
     ],
     registerLabel: "Hosting a hackathon? Register as Organiser →",
     registerUrl: "/register?role=ORGANIZER",
-    placeholderEmail: "organizer@verijudge.demo",
+    placeholderEmail: "organizer@example.com",
     demoRole: "organizer"
   },
   JUDGE: {
@@ -161,13 +162,13 @@ const ROLE_CONFIGS: Record<RoleType, RoleConfig> = {
     ],
     registerLabel: "Invited to evaluate? Create Judge Account →",
     registerUrl: "/register?role=JUDGE",
-    placeholderEmail: "judge@verijudge.demo",
+    placeholderEmail: "judge@example.com",
     demoRole: "judge"
   }
 };
 
 export default function HomePage() {
-  const { user, login, demoLogin } = useAuth();
+  const { user, login, logout, demoLogin } = useAuth();
 
   // Splash Screen State
   const [showSplash, setShowSplash] = useState(true);
@@ -561,6 +562,53 @@ export default function HomePage() {
                 </p>
               </div>
 
+              {/* Active Session Detected Banner */}
+              {user && (
+                <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-indigo-300 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      Active Session Detected
+                    </span>
+                    <Badge variant="indigo" className="text-[10px]">
+                      {user.role}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-emerald-500 flex items-center justify-center text-xs font-bold text-white shadow-md">
+                      {user.full_name?.charAt(0) || "U"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{user.full_name}</p>
+                      <p className="text-xs text-graphite-400 font-mono truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <Link
+                      href={
+                        user.role === "ORGANIZER"
+                          ? "/organizer/dashboard"
+                          : user.role === "JUDGE"
+                          ? "/judge/dashboard"
+                          : "/participant/dashboard"
+                      }
+                      className="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold text-center transition-colors shadow-md shadow-indigo-600/30 flex items-center justify-center gap-1.5"
+                    >
+                      <span>Continue to Dashboard</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => logout()}
+                      className="py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold transition-colors flex items-center gap-1.5"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Error Message Alert */}
               {error && (
                 <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-400 font-mono flex items-center gap-2">
@@ -611,13 +659,14 @@ export default function HomePage() {
               </div>
 
               {/* Authentication Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
                 <Input
                   label="Email Address"
                   type="email"
                   placeholder={config.placeholderEmail}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="off"
                   required
                 />
 

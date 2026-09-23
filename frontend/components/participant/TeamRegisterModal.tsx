@@ -349,7 +349,7 @@ export function TeamRegisterModal({
                           <label className="block text-[11px] text-graphite-400 mb-1">Full Name</label>
                           <input
                             type="text"
-                            placeholder="e.g. Alex Rivera"
+                            placeholder="e.g. Member Name"
                             value={member.full_name}
                             onChange={(e) =>
                               handleMemberChange(index, "full_name", e.target.value)
@@ -361,7 +361,7 @@ export function TeamRegisterModal({
                           <label className="block text-[11px] text-graphite-400 mb-1">Email *</label>
                           <input
                             type="email"
-                            placeholder="alex@team.com"
+                            placeholder="member@team.com"
                             value={member.email}
                             onChange={(e) =>
                               handleMemberChange(index, "email", e.target.value)
