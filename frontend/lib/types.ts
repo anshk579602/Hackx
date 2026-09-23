@@ -28,6 +28,8 @@ export interface Hackathon {
   is_published: boolean;
   active_rubric_id?: string;
   active_rubric?: Rubric;
+  min_team_size?: number;
+  max_team_size?: number;
   created_at: string;
 }
 

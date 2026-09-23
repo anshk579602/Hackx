@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Boolean, Text
+from sqlalchemy import Column, String, DateTime, Boolean, Text, Integer
 from datetime import datetime
 import uuid
 from app.database import Base
@@ -15,4 +15,6 @@ class Hackathon(Base):
     is_published = Column(Boolean, default=False)  # Results published or not
     active_rubric_id = Column(String(36), nullable=True)
     status = Column(String(50), default="ACTIVE")  # UPCOMING, ACTIVE, EVALUATING, COMPLETED
+    min_team_size = Column(Integer, default=1, nullable=True)
+    max_team_size = Column(Integer, default=4, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

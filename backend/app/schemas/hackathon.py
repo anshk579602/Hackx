@@ -10,6 +10,8 @@ class HackathonBase(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     status: str = "ACTIVE"
+    min_team_size: Optional[int] = 1
+    max_team_size: Optional[int] = 4
 
 class HackathonCreate(HackathonBase):
     pass
@@ -22,6 +24,8 @@ class HackathonUpdate(BaseModel):
     end_date: Optional[datetime] = None
     status: Optional[str] = None
     active_rubric_id: Optional[str] = None
+    min_team_size: Optional[int] = None
+    max_team_size: Optional[int] = None
 
 class HackathonResponse(HackathonBase):
     id: str

@@ -42,7 +42,9 @@ async def create_hackathon(
         description=hackathon_in.description,
         start_date=hackathon_in.start_date,
         end_date=hackathon_in.end_date,
-        status="ACTIVE"
+        status="ACTIVE",
+        min_team_size=hackathon_in.min_team_size or 1,
+        max_team_size=hackathon_in.max_team_size or 4
     )
     db.add(hackathon)
     await db.commit()

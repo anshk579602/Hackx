@@ -71,6 +71,8 @@ export default function HackathonDetailPage() {
   const [editDescription, setEditDescription] = useState("");
   const [editStatus, setEditStatus] = useState("ACTIVE");
   const [editRubricId, setEditRubricId] = useState("");
+  const [editMinTeamSize, setEditMinTeamSize] = useState(1);
+  const [editMaxTeamSize, setEditMaxTeamSize] = useState(4);
   const [isSaving, setIsSaving] = useState(false);
 
   // Publish Status
@@ -105,6 +107,8 @@ export default function HackathonDetailPage() {
       setEditDescription(h.description || "");
       setEditStatus(h.status);
       setEditRubricId(h.active_rubric_id || "");
+      setEditMinTeamSize(h.min_team_size || 1);
+      setEditMaxTeamSize(h.max_team_size || 4);
     } catch (err: any) {
       console.error("Failed to load hackathon data:", err);
       setErrorMsg(err.message || "Could not retrieve hackathon details from the server.");
@@ -126,6 +130,10 @@ export default function HackathonDetailPage() {
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id || !hackathon) return;
+    if (editMinTeamSize > editMaxTeamSize) {
+      alert("Minimum team size cannot be greater than maximum team size.");
+      return;
+    }
     setIsSaving(true);
     try {
       const updated = await api.updateHackathon(id, {
@@ -134,6 +142,8 @@ export default function HackathonDetailPage() {
         description: editDescription.trim(),
         status: editStatus,
         active_rubric_id: editRubricId || undefined,
+        min_team_size: Number(editMinTeamSize) || 1,
+        max_team_size: Number(editMaxTeamSize) || 4,
       });
       setHackathon(updated);
       setIsEditModalOpen(false);
@@ -323,7 +333,9 @@ export default function HackathonDetailPage() {
             <Users className="w-4 h-4 text-indigo-400" />
           </div>
           <div className="text-2xl font-bold text-white tracking-tight">{totalTeams}</div>
-          <p className="text-[10px] text-graphite-500 mt-1 font-mono">Max 6 per squad</p>
+          <p className="text-[10px] text-graphite-500 mt-1 font-mono">
+            Squad size: {hackathon.min_team_size || 1}-{hackathon.max_team_size || 4}
+          </p>
         </Card>
 
         <Card className="border-graphite-750 bg-gradient-to-br from-teal-950/20 to-graphite-900/60 p-4 rounded-2xl">
@@ -368,7 +380,7 @@ export default function HackathonDetailPage() {
                 Registered Teams &amp; Rosters
               </h2>
               <p className="text-xs text-graphite-400">
-                Click any team to inspect member breakdown (up to 6 members), join codes, and submission telemetry.
+                Click any team to inspect member breakdown (up to {hackathon.max_team_size || 4} members), join codes, and submission telemetry.
               </p>
             </div>
             <Badge variant="outline" className="font-mono text-xs">
@@ -408,7 +420,7 @@ export default function HackathonDetailPage() {
                           </Badge>
                         </div>
                         <p className="text-xs text-graphite-400">
-                          {t.member_count} / 6 Members
+                          {t.member_count} / {hackathon.max_team_size || 4} Members
                           {t.project_title && (
                             <>
                               {" "}• Project: <span className="text-graphite-200 font-medium">{t.project_title}</span>
@@ -508,6 +520,12 @@ export default function HackathonDetailPage() {
                 <div className="flex justify-between">
                   <span className="text-graphite-500">Status:</span>
                   <span className="text-indigo-300 font-semibold">{hackathon.status}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-graphite-500">Team Size Rule:</span>
+                  <span className="text-emerald-400 font-semibold">
+                    {hackathon.min_team_size || 1} to {hackathon.max_team_size || 4} members
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -615,6 +633,33 @@ export default function HackathonDetailPage() {
                 onChange={(e) => setEditDescription(e.target.value)}
                 rows={4}
               />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-graphite-300">Min Team Size</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={10}
+                    value={editMinTeamSize}
+                    onChange={(e) => setEditMinTeamSize(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full h-10 rounded-lg border border-graphite-700 bg-graphite-900 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <p className="text-[10px] text-graphite-500">1 = Solo allowed</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-graphite-300">Max Team Size</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={editMaxTeamSize}
+                    onChange={(e) => setEditMaxTeamSize(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full h-10 rounded-lg border border-graphite-700 bg-graphite-900 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <p className="text-[10px] text-graphite-500">Limit: 2, 4, 6, etc.</p>
+                </div>
+              </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-graphite-300">Lifecycle Status</label>

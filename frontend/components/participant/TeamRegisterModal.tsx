@@ -17,7 +17,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Sparkles,
-  ShieldAlert
+  ShieldAlert,
+  Info
 } from "lucide-react";
 
 interface TeamRegisterModalProps {
@@ -52,18 +53,34 @@ export function TeamRegisterModal({
   );
   const [leaderRole, setLeaderRole] = useState("Team Leader / Fullstack");
 
-  // Members 2 to 6 (up to 5 additional members)
-  const [members, setMembers] = useState<TeamMemberInput[]>([
-    { full_name: "", email: "", role_in_team: "Frontend Developer" },
-  ]);
+  // Dynamic teammates list
+  const selectedHackathon = hackathons.find((h) => h.id === hackathonId) || hackathons[0];
+  const minTeamSize = selectedHackathon?.min_team_size || 1;
+  const maxTeamSize = selectedHackathon?.max_team_size || 4;
+  const maxAdditionalSlots = Math.max(0, maxTeamSize - 1);
+
+  const [members, setMembers] = useState<TeamMemberInput[]>(() => {
+    // Start with 1 teammate if minTeamSize > 1, otherwise empty or 1 optional
+    return minTeamSize > 1 ? [{ full_name: "", email: "", role_in_team: "Developer" }] : [];
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
+  const handleHackathonChange = (newId: string) => {
+    setHackathonId(newId);
+    const targetH = hackathons.find((h) => h.id === newId);
+    const targetMax = targetH?.max_team_size || 4;
+    const targetMaxAdd = Math.max(0, targetMax - 1);
+    if (members.length > targetMaxAdd) {
+      setMembers(members.slice(0, targetMaxAdd));
+    }
+  };
+
   const handleAddMember = () => {
-    if (members.length >= 5) return; // Total 1 leader + 5 = 6 members
+    if (members.length >= maxAdditionalSlots) return;
     setMembers([
       ...members,
       { full_name: "", email: "", role_in_team: "Backend Developer" },
@@ -104,6 +121,20 @@ export function TeamRegisterModal({
         role_in_team: m.role_in_team.trim() || "Developer",
       }));
 
+    const totalCount = 1 + validMembers.length;
+    if (totalCount < minTeamSize) {
+      setError(
+        `This hackathon requires a minimum of ${minTeamSize} team member${minTeamSize > 1 ? "s" : ""}. You currently have ${totalCount}. Please add at least ${minTeamSize - 1} teammate${minTeamSize - 1 > 1 ? "s" : ""}.`
+      );
+      return;
+    }
+    if (totalCount > maxTeamSize) {
+      setError(
+        `Team size exceeds the maximum limit of ${maxTeamSize} members allowed for this hackathon.`
+      );
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
@@ -135,12 +166,18 @@ export function TeamRegisterModal({
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <span>Register Hackathon Team</span>
-                <Badge variant="success" className="text-xs">Up to 6 Members</Badge>
-              </h2>
-              <p className="text-xs text-graphite-400">
-                Register as Team Leader and add up to 5 teammates for instant team enrollment.
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-white">Register Hackathon Team</h2>
+                <Badge variant="success" className="text-xs">
+                  {minTeamSize === maxTeamSize
+                    ? `${maxTeamSize} Members`
+                    : `${minTeamSize}-${maxTeamSize} Members`}
+                </Badge>
+              </div>
+              <p className="text-xs text-graphite-400 mt-0.5">
+                {maxAdditionalSlots > 0
+                  ? `Leader + up to ${maxAdditionalSlots} optional teammate${maxAdditionalSlots > 1 ? "s" : ""} (Max ${maxTeamSize})`
+                  : "Solo participant registration"}
               </p>
             </div>
           </div>
@@ -171,13 +208,13 @@ export function TeamRegisterModal({
                 </label>
                 <select
                   value={hackathonId}
-                  onChange={(e) => setHackathonId(e.target.value)}
+                  onChange={(e) => handleHackathonChange(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-graphite-950 border border-graphite-750 text-white text-sm focus:border-emerald-500 focus:outline-none"
                   required
                 >
                   {hackathons.map((h) => (
                     <option key={h.id} value={h.id}>
-                      {h.title}
+                      {h.title} (Team size: {h.min_team_size || 1}-{h.max_team_size || 4})
                     </option>
                   ))}
                 </select>
@@ -240,109 +277,135 @@ export function TeamRegisterModal({
               </div>
             </div>
 
-            {/* Additional Teammates (Slots 2 to 6) */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <UserPlus className="w-4 h-4 text-emerald-400" />
-                    <span>Teammates Details ({members.length} / 5 slots used)</span>
-                  </h3>
-                  <p className="text-[11px] text-graphite-400">
-                    Add up to 5 additional members to complete your 6-person team.
-                  </p>
+            {/* Additional Teammates */}
+            {maxAdditionalSlots > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <UserPlus className="w-4 h-4 text-emerald-400" />
+                      <span>
+                        Teammates Details ({members.length} / {maxAdditionalSlots} slots)
+                      </span>
+                    </h3>
+                    <p className="text-[11px] text-graphite-400">
+                      Organizer configured squad limit: {minTeamSize} to {maxTeamSize} members.
+                    </p>
+                  </div>
+
+                  {members.length < maxAdditionalSlots && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddMember}
+                      className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 text-xs gap-1.5"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>+ Add Teammate</span>
+                    </Button>
+                  )}
                 </div>
 
-                {members.length < 5 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddMember}
-                    className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 text-xs gap-1.5"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" />
-                    <span>+ Add Teammate</span>
-                  </Button>
-                )}
-              </div>
-
-              {members.map((member, index) => (
-                <div
-                  key={index}
-                  className="p-4 rounded-xl bg-graphite-950/80 border border-graphite-800 space-y-3 transition-all"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-semibold text-graphite-300">
-                      Member {index + 2}
-                    </span>
-                    {members.length > 1 && (
-                      <button
+                {members.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-graphite-950/60 border border-dashed border-graphite-800 text-center space-y-1.5">
+                    <p className="text-xs text-graphite-400">
+                      No additional teammates added. You are currently registering solo.
+                    </p>
+                    {members.length < maxAdditionalSlots && (
+                      <Button
                         type="button"
-                        onClick={() => handleRemoveMember(index)}
-                        className="text-graphite-500 hover:text-rose-400 text-xs flex items-center gap-1 transition-colors"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleAddMember}
+                        className="text-xs text-emerald-400 hover:text-emerald-300"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Remove</span>
-                      </button>
+                        + Add a Teammate
+                      </Button>
                     )}
                   </div>
+                ) : (
+                  members.map((member, index) => (
+                    <div
+                      key={index}
+                      className="p-4 rounded-xl bg-graphite-950/80 border border-graphite-800 space-y-3 transition-all"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono font-semibold text-graphite-300">
+                          Member {index + 2}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMember(index)}
+                          className="text-graphite-500 hover:text-rose-400 text-xs flex items-center gap-1 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-[11px] text-graphite-400 mb-1">Full Name</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Alex Rivera"
-                        value={member.full_name}
-                        onChange={(e) =>
-                          handleMemberChange(index, "full_name", e.target.value)
-                        }
-                        className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none"
-                      />
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[11px] text-graphite-400 mb-1">Full Name</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Alex Rivera"
+                            value={member.full_name}
+                            onChange={(e) =>
+                              handleMemberChange(index, "full_name", e.target.value)
+                            }
+                            className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-graphite-400 mb-1">Email *</label>
+                          <input
+                            type="email"
+                            placeholder="alex@team.com"
+                            value={member.email}
+                            onChange={(e) =>
+                              handleMemberChange(index, "email", e.target.value)
+                            }
+                            className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-graphite-400 mb-1">
+                            Role / Specialization
+                          </label>
+                          <input
+                            type="text"
+                            list={`roles-list-${index}`}
+                            placeholder="e.g. Frontend Developer"
+                            value={member.role_in_team}
+                            onChange={(e) =>
+                              handleMemberChange(index, "role_in_team", e.target.value)
+                            }
+                            className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none"
+                          />
+                          <datalist id={`roles-list-${index}`}>
+                            {COMMON_ROLES.map((r) => (
+                              <option key={r} value={r} />
+                            ))}
+                          </datalist>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[11px] text-graphite-400 mb-1">Email *</label>
-                      <input
-                        type="email"
-                        placeholder="alex@team.com"
-                        value={member.email}
-                        onChange={(e) =>
-                          handleMemberChange(index, "email", e.target.value)
-                        }
-                        className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none font-mono"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] text-graphite-400 mb-1">Role / Specialization</label>
-                      <input
-                        type="text"
-                        list={`roles-list-${index}`}
-                        placeholder="e.g. Frontend Developer"
-                        value={member.role_in_team}
-                        onChange={(e) =>
-                          handleMemberChange(index, "role_in_team", e.target.value)
-                        }
-                        className="w-full px-3 py-2 rounded-lg bg-graphite-900 border border-graphite-750 text-white text-xs focus:border-emerald-500 focus:outline-none"
-                      />
-                      <datalist id={`roles-list-${index}`}>
-                        {COMMON_ROLES.map((r) => (
-                          <option key={r} value={r} />
-                        ))}
-                      </datalist>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
           </form>
         </div>
 
         {/* Footer Actions */}
         <div className="flex items-center justify-between p-5 border-t border-graphite-800 bg-graphite-950/80">
           <div className="text-xs text-graphite-400 font-mono">
-            <span>Total Team Size: </span>
-            <strong className="text-emerald-400">{totalMembersCount} / 6 members</strong>
+            <span>Team Size: </span>
+            <strong className="text-emerald-400">
+              {totalMembersCount} / {maxTeamSize} members
+            </strong>
+            <span className="text-graphite-500 ml-1.5">(Min: {minTeamSize})</span>
           </div>
 
           <div className="flex items-center gap-3">

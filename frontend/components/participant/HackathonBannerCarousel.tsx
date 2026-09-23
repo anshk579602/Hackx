@@ -127,7 +127,9 @@ export function HackathonBannerCarousel({
 
             <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-graphite-800/80 border border-graphite-700/80 text-[11px] text-graphite-300 font-mono">
               <Users className="w-3 h-3 text-emerald-400" />
-              <span>Up to 6 Members</span>
+              <span>
+                Teams: {current.min_team_size || 1} to {current.max_team_size || 4} Members
+              </span>
             </span>
           </div>
 
@@ -208,7 +210,7 @@ export function HackathonBannerCarousel({
                 className="gap-2 font-bold shadow-xl shadow-emerald-600/30 px-5"
               >
                 <Users className="w-4 h-4" />
-                <span>Register Team (Up to 6)</span>
+                <span>Register Team ({current.min_team_size || 1}-{current.max_team_size || 4} Members)</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             ) : (
@@ -219,7 +221,7 @@ export function HackathonBannerCarousel({
                   className="gap-2 font-bold shadow-xl shadow-emerald-600/30 px-5"
                 >
                   <Users className="w-4 h-4" />
-                  <span>Register Team (Up to 6)</span>
+                  <span>Register Team ({current.min_team_size || 1}-{current.max_team_size || 4} Members)</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </Link>

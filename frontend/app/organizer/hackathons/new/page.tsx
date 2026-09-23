@@ -14,12 +14,18 @@ export default function NewHackathonPage() {
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
   const [description, setDescription] = useState("");
+  const [minTeamSize, setMinTeamSize] = useState(1);
+  const [maxTeamSize, setMaxTeamSize] = useState(4);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
+    if (minTeamSize > maxTeamSize) {
+      setError("Minimum team size cannot be greater than maximum team size.");
+      return;
+    }
     setIsSubmitting(true);
     setError(null);
     try {
@@ -27,6 +33,8 @@ export default function NewHackathonPage() {
         title: title.trim(),
         tagline: tagline.trim() || undefined,
         description: description.trim() || undefined,
+        min_team_size: Number(minTeamSize) || 1,
+        max_team_size: Number(maxTeamSize) || 4,
       });
       router.push("/organizer/hackathons");
     } catch (err: any) {
@@ -81,6 +89,38 @@ export default function NewHackathonPage() {
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
             />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-graphite-900 border border-graphite-750">
+              <div>
+                <label className="text-xs font-medium text-graphite-300 block mb-1.5">
+                  Minimum Team Size
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={minTeamSize}
+                  onChange={(e) => setMinTeamSize(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full h-10 rounded-lg border border-graphite-700 bg-graphite-950 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <p className="text-[10px] text-graphite-500 mt-1">e.g. 1 for solo allowed, 2 for min pair</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-graphite-300 block mb-1.5">
+                  Maximum Team Size
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={maxTeamSize}
+                  onChange={(e) => setMaxTeamSize(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-full h-10 rounded-lg border border-graphite-700 bg-graphite-950 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <p className="text-[10px] text-graphite-500 mt-1">Configurable limit: e.g. 2, 4, 6, etc.</p>
+              </div>
+            </div>
 
             <Button type="submit" variant="primary" isLoading={isSubmitting} className="w-full">
               Create Hackathon &amp; Configure Rubric

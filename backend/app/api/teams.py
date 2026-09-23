@@ -128,6 +128,33 @@ async def create_team(
     if existing_mem.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="You are already registered in a team for this hackathon.")
 
+    # Enforce team size limits configured by organizer
+    min_members = (hack.min_team_size if hack and hack.min_team_size else 1)
+    max_members = (hack.max_team_size if hack and hack.max_team_size else 4)
+
+    # Process additional members (up to max_members - 1)
+    cleaned_members = []
+    if team_in.members:
+        added_emails = {current_user.email.strip().lower()}
+        for mem_in in team_in.members:
+            clean_email = mem_in.email.strip().lower()
+            if not clean_email or clean_email in added_emails:
+                continue
+            added_emails.add(clean_email)
+            cleaned_members.append(mem_in)
+
+    total_members = 1 + len(cleaned_members)
+    if total_members > max_members:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Team size exceeds the maximum limit of {max_members} members for this hackathon."
+        )
+    if total_members < min_members:
+        raise HTTPException(
+            status_code=400,
+            detail=f"This hackathon requires a minimum of {min_members} members (currently {total_members})."
+        )
+
     code = generate_join_code()
     team = Team(
         name=team_in.name.strip(),
@@ -145,37 +172,30 @@ async def create_team(
     )
     db.add(lead_member)
 
-    # Process additional members (up to 5 more, so total <= 6)
-    if team_in.members:
-        added_emails = {current_user.email.strip().lower()}
-        for mem_in in team_in.members[:5]:
-            clean_email = mem_in.email.strip().lower()
-            if not clean_email or clean_email in added_emails:
-                continue
-            added_emails.add(clean_email)
-
-            # Check if user exists
-            u_stmt = select(User).where(User.email == clean_email)
-            u_res = await db.execute(u_stmt)
-            mem_user = u_res.scalar_one_or_none()
-            if not mem_user:
-                mem_user = User(
-                    email=clean_email,
-                    full_name=mem_in.full_name.strip() or clean_email.split("@")[0],
-                    role=UserRole.PARTICIPANT,
-                    hashed_password=get_password_hash("Demo123!"),
-                )
-                db.add(mem_user)
-                await db.flush()
-
-            # Add member to team
-            role_desc = mem_in.role_in_team.strip() if mem_in.role_in_team else "Developer"
-            tm = TeamMember(
-                team_id=team.id,
-                user_id=mem_user.id,
-                role_in_team=role_desc
+    # Add additional teammates
+    for mem_in in cleaned_members[:max_members - 1]:
+        clean_email = mem_in.email.strip().lower()
+        # Check if user exists
+        u_stmt = select(User).where(User.email == clean_email)
+        u_res = await db.execute(u_stmt)
+        mem_user = u_res.scalar_one_or_none()
+        if not mem_user:
+            mem_user = User(
+                email=clean_email,
+                full_name=mem_in.full_name.strip() or clean_email.split("@")[0],
+                role=UserRole.PARTICIPANT,
+                hashed_password=get_password_hash("Demo123!"),
             )
-            db.add(tm)
+            db.add(mem_user)
+            await db.flush()
+
+        role_desc = mem_in.role_in_team.strip() if mem_in.role_in_team else "Developer"
+        tm = TeamMember(
+            team_id=team.id,
+            user_id=mem_user.id,
+            role_in_team=role_desc
+        )
+        db.add(tm)
 
     await db.commit()
     await db.refresh(team)
@@ -196,6 +216,19 @@ async def join_team(
     team = result.scalar_one_or_none()
     if not team:
         raise HTTPException(status_code=404, detail="Invalid team join code.")
+
+    # Check max team size configured for the hackathon
+    hack_res = await db.execute(select(Hackathon).where(Hackathon.id == team.hackathon_id))
+    hack = hack_res.scalar_one_or_none()
+    max_allowed = (hack.max_team_size if hack and hack.max_team_size else 4)
+
+    mem_count_res = await db.execute(select(TeamMember).where(TeamMember.team_id == team.id))
+    current_count = len(mem_count_res.scalars().all())
+    if current_count >= max_allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"This team is already full. The organizer set a maximum limit of {max_allowed} members for this hackathon."
+        )
 
     member = TeamMember(
         team_id=team.id,

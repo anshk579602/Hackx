@@ -136,6 +136,8 @@ class ApiClient {
     description?: string;
     start_date?: string;
     end_date?: string;
+    min_team_size?: number;
+    max_team_size?: number;
   }): Promise<Hackathon> {
     return this.request<Hackathon>("/hackathons", {
       method: "POST",

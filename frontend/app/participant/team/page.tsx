@@ -89,8 +89,13 @@ export default function ParticipantTeamPage() {
     }
   };
 
+  const selectedHackathon = hackathons.find((h) => h.id === selectedHackathonId) || hackathons[0];
+  const minTeamSize = selectedHackathon?.min_team_size || 1;
+  const maxTeamSize = selectedHackathon?.max_team_size || 4;
+  const maxAdditionalSlots = Math.max(0, maxTeamSize - 1);
+
   const handleAddMember = () => {
-    if (members.length >= 5) return;
+    if (members.length >= maxAdditionalSlots) return;
     setMembers([
       ...members,
       { full_name: "", email: "", role_in_team: "Backend Developer" },
@@ -129,6 +134,20 @@ export default function ParticipantTeamPage() {
         email: m.email.trim().toLowerCase(),
         role_in_team: m.role_in_team.trim() || "Developer",
       }));
+
+    const totalCount = 1 + validMembers.length;
+    if (totalCount < minTeamSize) {
+      setActionError(
+        `This hackathon requires a minimum of ${minTeamSize} team member${minTeamSize > 1 ? "s" : ""}. You currently have ${totalCount}. Please add at least ${minTeamSize - 1} teammate${minTeamSize - 1 > 1 ? "s" : ""}.`
+      );
+      return;
+    }
+    if (totalCount > maxTeamSize) {
+      setActionError(
+        `Team size exceeds the maximum limit of ${maxTeamSize} members allowed for this hackathon.`
+      );
+      return;
+    }
 
     setActionError(null);
     setIsSubmitting(true);
@@ -171,7 +190,6 @@ export default function ParticipantTeamPage() {
     );
   }
 
-  const selectedHackathon = hackathons.find((h) => h.id === selectedHackathonId);
   const activeTeamHackathon = team
     ? hackathons.find((h) => h.id === team.hackathon_id)
     : null;
@@ -276,7 +294,9 @@ export default function ParticipantTeamPage() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Users className="w-4 h-4 text-emerald-400" />
-                <span>Team Roster ({team.members?.length || 1} / 6 Members)</span>
+                <span>
+                  Team Roster ({team.members?.length || 1} / {activeTeamHackathon?.max_team_size || 4} Members)
+                </span>
               </h3>
               <Link
                 href="/participant/team/members"
@@ -409,7 +429,7 @@ export default function ParticipantTeamPage() {
                 }`}
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Register 6-Member Team</span>
+                <span>Register Team ({minTeamSize}-{maxTeamSize} Members)</span>
               </button>
               <button
                 type="button"
@@ -426,14 +446,14 @@ export default function ParticipantTeamPage() {
             </div>
 
             {activeTab === "create" ? (
-              /* Comprehensive 6-Member Team Registration Form */
+              /* Dynamic Team Registration Form */
               <Card className="border-graphite-750 bg-graphite-900/90 shadow-xl">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="flex items-center gap-2 text-lg text-white">
                         <Users className="w-5 h-5 text-emerald-400" />
-                        <span>Team Registration (Up to 6 Members)</span>
+                        <span>Team Registration ({minTeamSize}-{maxTeamSize} Members)</span>
                       </CardTitle>
                       <p className="text-xs text-graphite-400 mt-1">
                         {selectedHackathon ? (
@@ -447,7 +467,9 @@ export default function ParticipantTeamPage() {
                       </p>
                     </div>
                     <Badge variant="success" className="text-xs">
-                      1 Leader + up to 5 Teammates
+                      {maxAdditionalSlots > 0
+                        ? `1 Leader + up to ${maxAdditionalSlots} Teammates`
+                        : "Solo Registration"}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -506,52 +528,69 @@ export default function ParticipantTeamPage() {
                     </div>
 
                     {/* Additional Teammates */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                            <UserPlus className="w-4 h-4 text-emerald-400" />
-                            <span>Additional Teammates ({members.length} / 5 slots)</span>
-                          </h4>
-                          <p className="text-[11px] text-graphite-400">
-                            Enter name, email, and role for each teammate (optional at registration, can be added now).
-                          </p>
+                    {maxAdditionalSlots > 0 && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                              <UserPlus className="w-4 h-4 text-emerald-400" />
+                              <span>Additional Teammates ({members.length} / {maxAdditionalSlots} slots)</span>
+                            </h4>
+                            <p className="text-[11px] text-graphite-400">
+                              Enter name, email, and role for each teammate (Min: {minTeamSize}, Max: {maxTeamSize} members).
+                            </p>
+                          </div>
+
+                          {members.length < maxAdditionalSlots && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleAddMember}
+                              className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 text-xs gap-1.5"
+                            >
+                              <UserPlus className="w-3.5 h-3.5" />
+                              <span>+ Add Teammate</span>
+                            </Button>
+                          )}
                         </div>
 
-                        {members.length < 5 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleAddMember}
-                            className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 text-xs gap-1.5"
-                          >
-                            <UserPlus className="w-3.5 h-3.5" />
-                            <span>+ Add Teammate</span>
-                          </Button>
-                        )}
-                      </div>
-
-                      {members.map((member, index) => (
-                        <div
-                          key={index}
-                          className="p-3.5 rounded-xl bg-graphite-950/80 border border-graphite-800 space-y-2.5"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-mono font-semibold text-graphite-300">
-                              Member {index + 2}
-                            </span>
-                            {members.length > 1 && (
-                              <button
+                        {members.length === 0 ? (
+                          <div className="p-4 rounded-xl bg-graphite-950/60 border border-dashed border-graphite-800 text-center space-y-1.5">
+                            <p className="text-xs text-graphite-400">
+                              No additional teammates added. Registering as leader (solo).
+                            </p>
+                            {members.length < maxAdditionalSlots && (
+                              <Button
                                 type="button"
-                                onClick={() => handleRemoveMember(index)}
-                                className="text-graphite-500 hover:text-rose-400 text-xs flex items-center gap-1"
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleAddMember}
+                                className="text-xs text-emerald-400 hover:text-emerald-300"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Remove</span>
-                              </button>
+                                + Add a Teammate
+                              </Button>
                             )}
                           </div>
+                        ) : (
+                          members.map((member, index) => (
+                            <div
+                              key={index}
+                              className="p-3.5 rounded-xl bg-graphite-950/80 border border-graphite-800 space-y-2.5"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-mono font-semibold text-graphite-300">
+                                  Member {index + 2}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveMember(index)}
+                                  className="text-graphite-500 hover:text-rose-400 text-xs flex items-center gap-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Remove</span>
+                                </button>
+                              </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
@@ -598,8 +637,10 @@ export default function ParticipantTeamPage() {
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      ))
+                    )}
+                  </div>
+                )}
 
                     <Button
                       type="submit"
