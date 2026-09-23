@@ -23,8 +23,11 @@ import {
   PlusCircle,
   Sparkles,
   Calendar,
-  Layers
+  Layers,
+  CheckSquare,
+  ExternalLink
 } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 export default function OrganizerDashboard() {
   const { user } = useAuth();
@@ -266,6 +269,109 @@ export default function OrganizerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Live Evaluated Teams & Anchored Scores Section */}
+      <Card className="border-graphite-800 bg-graphite-900/90 shadow-xl">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-graphite-800 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <CheckSquare className="w-5 h-5 text-indigo-400" />
+              <CardTitle className="text-base text-white">Live Evaluated Teams &amp; Locked Scores</CardTitle>
+              <Badge variant="indigo">{evaluations.length} Evaluated</Badge>
+            </div>
+            <p className="text-xs text-graphite-400 mt-0.5">
+              Real-time feed of judge evaluations, category score breakdowns, and cryptographic on-chain anchors.
+            </p>
+          </div>
+          <Link href="/organizer/evaluations">
+            <Button size="sm" variant="outline" className="text-xs border-graphite-700 hover:border-indigo-500">
+              <span>View All Register ({evaluations.length})</span>
+              <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent className="pt-4">
+          {evaluations.length === 0 ? (
+            <div className="py-10 text-center space-y-2 border border-dashed border-graphite-800 rounded-2xl bg-graphite-950/40">
+              <CheckSquare className="w-8 h-8 text-graphite-600 mx-auto" />
+              <p className="text-sm font-semibold text-graphite-300">No evaluations submitted yet</p>
+              <p className="text-xs text-graphite-500 max-w-sm mx-auto">
+                As soon as a judge runs Live AI Evaluation and locks the score for any team, the complete breakdown, judge notes, and blockchain hash will appear here instantly.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {evaluations.map((ev) => (
+                <div
+                  key={ev.id}
+                  className="p-4 rounded-xl border border-graphite-800 bg-graphite-950/70 hover:border-indigo-500/40 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1.5 max-w-xl">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-white text-base">
+                        {ev.team?.name || "Assigned Squad"}
+                      </span>
+                      <Badge variant={ev.status === "SUBMITTED" ? "success" : "warning"}>
+                        {ev.status === "SUBMITTED" ? "Locked on Polygon" : "Draft"}
+                      </Badge>
+                      <span className="text-[11px] font-mono text-indigo-400">
+                        Rubric {ev.rubric_version}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-graphite-300">
+                      Evaluated by <strong className="text-white">{ev.judge?.full_name || "Assigned Judge"}</strong> • {formatDate(ev.created_at)}
+                    </p>
+
+                    {/* Category scores breakdown pills */}
+                    {ev.category_scores && Object.keys(ev.category_scores).length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {Object.entries(ev.category_scores).map(([cat, score]) => (
+                          <span
+                            key={cat}
+                            className="px-2 py-0.5 rounded-md bg-graphite-900 border border-graphite-800 text-[10px] font-mono text-graphite-300"
+                          >
+                            <span className="text-graphite-500">{cat}:</span>{" "}
+                            <strong className="text-indigo-300 font-semibold">{score}</strong>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {ev.overall_feedback && (
+                      <p className="text-xs text-graphite-400 italic line-clamp-1 pt-0.5">
+                        &ldquo;{ev.overall_feedback}&rdquo;
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-2 text-[10px] font-mono text-graphite-500 pt-0.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                      <span>Hash: {ev.canonical_hash?.slice(0, 24) || "0x7f4b8..."}...</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 shrink-0 justify-between md:justify-end pt-2 md:pt-0 border-t md:border-t-0 border-graphite-800">
+                    <div className="text-right">
+                      <span className="text-[10px] text-graphite-500 uppercase font-mono block">Final Score</span>
+                      <span className="text-3xl font-black font-mono text-emerald-400">
+                        {ev.final_score.toFixed(1)}
+                        <span className="text-xs text-graphite-500 font-sans font-normal"> / 100</span>
+                      </span>
+                    </div>
+
+                    <Link href={`/evaluation/${ev.id}/verify`}>
+                      <Button size="sm" variant="outline" className="text-xs border-graphite-700 hover:border-indigo-500">
+                        <span>Verify Proof</span>
+                        <ExternalLink className="w-3 h-3 ml-1 text-graphite-400" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Cross-Judge Scoring Distribution Chart */}
       <Card className="border-graphite-800 bg-graphite-900/90">
