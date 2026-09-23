@@ -6,6 +6,17 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Gemini client (lazy init)
+_gemini_client = None
+
+def _get_gemini_client():
+    global _gemini_client
+    if _gemini_client is None:
+        import google.generativeai as genai
+        genai.configure(api_key=settings.AI_API_KEY)
+        _gemini_client = genai.GenerativeModel("gemini-1.5-flash")
+    return _gemini_client
+
 class AIAgentService:
     @staticmethod
     def split_compound_claims(raw_claim: str) -> List[str]:
@@ -217,8 +228,72 @@ class AIAgentService:
     @classmethod
     async def _call_external_llm(cls, submission_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Calls external structured LLM (e.g. OpenAI / Anthropic / Gemini) when configured.
-        Falls back to deterministic engine on failure.
+        Calls Gemini 1.5 Flash to perform structured claim analysis on a hackathon submission.
+        Falls back to deterministic engine on any failure.
         """
-        # Placeholder for configured API keys
-        return cls._run_deterministic_ai_engine(submission_data)
+        import asyncio
+
+        title = submission_data.get("project_title", "Untitled Project")
+        desc = submission_data.get("project_description", "")
+        problem = submission_data.get("problem_statement", "")
+        github = submission_data.get("github_url") or "Not provided"
+        demo = submission_data.get("live_demo_url") or "Not provided"
+        tech_stack = submission_data.get("tech_stack", [])
+        raw_claims = submission_data.get("raw_claims", [])
+
+        if not raw_claims:
+            raw_claims = [
+                f"{title} delivers real-time performance",
+                "The system is scalable and modular",
+                "The UI is responsive and accessible"
+            ]
+
+        prompt = f"""You are an AI judge assistant for a hackathon. Analyze the following project submission and evaluate each claim.
+
+PROJECT DETAILS:
+- Title: {title}
+- Problem Statement: {problem}
+- Description: {desc}
+- GitHub: {github}
+- Live Demo: {demo}
+- Tech Stack: {', '.join(tech_stack) if tech_stack else 'Not specified'}
+
+CLAIMS TO EVALUATE:
+{chr(10).join(f"{i+1}. {c}" for i, c in enumerate(raw_claims))}
+
+For each claim, return a JSON array where each item has:
+- "claim": the original claim text
+- "subclaims": list of atomic sub-claims (split on "and", ";", "as well as")
+- "category": one of ["Technical Quality", "Innovation", "Problem Relevance", "Implementation", "Presentation"]
+- "status": one of ["Supported", "Partially Supported", "Unsupported", "Contradicted", "Needs Human Review"]
+- "confidence": integer 0-100
+- "evidence": list of objects with "source_type", "source_name", "url" (or null), "excerpt", "stance" (one of "supporting", "neutral", "contradicting")
+- "reasoning": 1-2 sentence explanation
+
+Also provide a "project_summary" string (2-3 sentences summarizing the project and its claims).
+
+Return ONLY valid JSON in this format:
+{{
+  "project_summary": "...",
+  "claims": [ ... ]
+}}"""
+
+        try:
+            client = _get_gemini_client()
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: client.generate_content(prompt)
+            )
+            text = response.text.strip()
+            # Strip markdown code fences if present
+            if text.startswith("```"):
+                text = re.sub(r"^```[a-z]*\n?", "", text)
+                text = re.sub(r"\n?```$", "", text)
+            result = json.loads(text)
+            logger.info(f"Gemini AI analysis complete for: {title}")
+            return result
+        except Exception as e:
+            logger.warning(f"Gemini API call failed, using deterministic engine: {e}")
+            return cls._run_deterministic_ai_engine(submission_data)
+
