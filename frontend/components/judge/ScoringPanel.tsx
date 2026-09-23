@@ -16,7 +16,8 @@ import {
   ChevronUp,
   Save,
   Send,
-  AlertTriangle
+  AlertTriangle,
+  Lock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -265,13 +266,16 @@ export function ScoringPanel({
         <div className="space-y-2 pt-2 border-t border-graphite-800">
           <Button
             variant="primary"
-            className="w-full"
+            className="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-bold shadow-lg shadow-amber-600/20"
             isLoading={isSubmitting}
             onClick={handlePreSubmitCheck}
           >
-            <Send className="w-4 h-4 mr-1.5" />
-            <span>Finalize & Anchor to Blockchain</span>
+            <Lock className="w-4 h-4 mr-1.5" />
+            <span>Lock Points & Anchor to Blockchain</span>
           </Button>
+          <p className="text-[10px] text-graphite-400 text-center font-mono">
+            Cryptographically sealed with Keccak-256 on Polygon testnet.
+          </p>
 
           <Button
             variant="secondary"
