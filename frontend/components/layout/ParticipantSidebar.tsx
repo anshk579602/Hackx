@@ -20,6 +20,7 @@ export function ParticipantSidebar() {
 
   const navItems = [
     { label: "Dashboard", href: "/participant/dashboard", icon: LayoutDashboard },
+    { label: "Hosted Events", href: "/participant/events", icon: Trophy },
     { label: "My Team", href: "/participant/team", icon: Users },
     { label: "Team Members", href: "/participant/team/members", icon: Users },
     { label: "My Submissions", href: "/participant/submissions", icon: FolderGit2 },

@@ -2,6 +2,9 @@ import os
 from pydantic_settings import BaseSettings
 from typing import List
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_DB_PATH = os.path.join(BASE_DIR, "hackjudge.db").replace("\\", "/")
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "HackX"
     API_V1_STR: str = "/api"
@@ -10,8 +13,6 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # Database (always resolves to absolute path so data is never lost regardless of cwd)
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    DEFAULT_DB_PATH = os.path.join(BASE_DIR, "hackjudge.db").replace("\\", "/")
     DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{DEFAULT_DB_PATH}")
     
     # CORS
