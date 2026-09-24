@@ -32,15 +32,24 @@ export function ScoreSlider({
     <div className="space-y-2 rounded-lg bg-graphite-900/60 p-3.5 border border-graphite-800">
       <div className="flex items-center justify-between">
         <div>
-          <span className="text-sm font-semibold text-white">{label}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-white">{label}</span>
+            <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-bold text-amber-300">
+              {maxScore}%
+            </span>
+          </div>
           {criteria && (
             <p className="text-xs text-graphite-400 line-clamp-1 mt-0.5">{criteria}</p>
           )}
         </div>
         <div className="flex items-baseline gap-1 text-right">
-          <span className={cn("text-lg font-bold font-mono", getTrackColor())}>
-            {value}
-          </span>
+          {disabled && value === 0 ? (
+            <span className="text-lg font-bold font-mono text-graphite-600">—</span>
+          ) : (
+            <span className={cn("text-lg font-bold font-mono transition-colors", getTrackColor())}>
+              {value}
+            </span>
+          )}
           <span className="text-xs text-graphite-500 font-mono">/ {maxScore}</span>
         </div>
       </div>

@@ -124,8 +124,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     if (typeof window !== "undefined") {
       localStorage.removeItem("hackx_user");
+      localStorage.removeItem("hackx_token");
+      window.location.href = "/login";
+    } else {
+      router.push("/login");
     }
-    router.push("/login");
   };
 
   const redirectToDashboard = (userRole: UserRole) => {

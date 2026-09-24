@@ -21,7 +21,7 @@ class ApiClient {
 
   constructor() {
     if (typeof window !== "undefined") {
-      this.token = localStorage.getItem("hackx_token") || localStorage.getItem("hackjudge_token");
+      this.token = localStorage.getItem("hackx_token");
     }
   }
 
@@ -32,14 +32,13 @@ class ApiClient {
         localStorage.setItem("hackx_token", token);
       } else {
         localStorage.removeItem("hackx_token");
-        localStorage.removeItem("hackjudge_token");
       }
     }
   }
 
   getToken(): string | null {
     if (!this.token && typeof window !== "undefined") {
-      this.token = localStorage.getItem("hackx_token") || localStorage.getItem("hackjudge_token");
+      this.token = localStorage.getItem("hackx_token");
     }
     return this.token;
   }

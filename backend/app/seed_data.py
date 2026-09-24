@@ -32,7 +32,7 @@ async def seed_database():
             print("Database already seeded with demo data.")
             return
 
-        print("Seeding HackJudge with InnovateX 2026 data...")
+        print("Seeding HackX with InnovateX 2026 data...")
 
         default_pwd = get_password_hash("Demo123!")
 
@@ -698,7 +698,7 @@ async def seed_database():
                 entity_type="SUBMISSION",
                 entity_id=sub1.id,
                 actor_role="AI_AGENT",
-                actor_name="VeriJudge AI Evidence Agent",
+                actor_name="HackX AI Evidence Agent",
                 action="AI_ANALYSIS_COMPLETED",
                 details={"claims_extracted": 12, "evidence_bundle_hash": sub1.evidence_bundle_hash},
                 timestamp=eval_time - timedelta(minutes=25)

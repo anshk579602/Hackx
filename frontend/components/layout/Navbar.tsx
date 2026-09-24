@@ -46,6 +46,10 @@ export function Navbar() {
   }
 
   const getDashboardLink = () => {
+    if (pathname.startsWith("/judge")) return "/judge/dashboard";
+    if (pathname.startsWith("/organizer")) return "/organizer/dashboard";
+    if (pathname.startsWith("/participant")) return "/participant/dashboard";
+
     switch (role) {
       case "ORGANIZER":
         return "/organizer/dashboard";

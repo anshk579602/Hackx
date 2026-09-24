@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
@@ -168,7 +169,8 @@ const ROLE_CONFIGS: Record<RoleType, RoleConfig> = {
 };
 
 export default function HomePage() {
-  const { user, login, logout, demoLogin } = useAuth();
+  const { user, login, logout, demoLogin, isLoading: authLoading } = useAuth();
+  const router = useRouter();
 
   // Splash Screen State
   const [showSplash, setShowSplash] = useState(true);
@@ -182,6 +184,15 @@ export default function HomePage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-redirect: if user is already authenticated, go straight to their dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (user.role === "ORGANIZER") router.replace("/organizer/dashboard");
+      else if (user.role === "JUDGE") router.replace("/judge/dashboard");
+      else router.replace("/participant/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   // Splash progression
   useEffect(() => {

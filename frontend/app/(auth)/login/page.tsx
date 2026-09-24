@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/Button";
@@ -161,7 +162,8 @@ const ROLE_CONFIGS: Record<RoleType, RoleConfig> = {
 };
 
 export default function LoginPage() {
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, demoLogin, isLoading: authLoading } = useAuth();
+  const router = useRouter();
 
   // Splash Screen State
   const [showSplash, setShowSplash] = useState(true);
@@ -175,6 +177,27 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-redirect: if user is already authenticated, go straight to their dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (user.role === "ORGANIZER") router.replace("/organizer/dashboard");
+      else if (user.role === "JUDGE") router.replace("/judge/dashboard");
+      else router.replace("/participant/dashboard");
+    }
+  }, [user, authLoading, router]);
+
+  const handleDemoSignIn = async (targetRole: "participant" | "organizer" | "judge") => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await demoLogin(targetRole);
+    } catch (err: any) {
+      setError(err.message || "Demo sign-in failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Splash animation progression
   useEffect(() => {
@@ -265,16 +288,16 @@ export default function LoginPage() {
                 </div>
               </motion.div>
 
-              {/* ONLY PORTAL NAME: HACKX ANIMATION */}
+              {/* ONLY PORTAL NAME: HACKX ANIMATION WITH ENLARGED X */}
               <motion.div
                 initial={{ opacity: 0, y: 30, letterSpacing: "0.2em" }}
                 animate={{ opacity: 1, y: 0, letterSpacing: "-0.03em" }}
                 transition={{ duration: 0.9, delay: 0.2, ease: "easeOut" }}
                 className="space-y-2"
               >
-                <h1 className="text-6xl sm:text-8xl md:text-9xl font-black uppercase tracking-tight select-none">
-                  <span className="text-white drop-shadow-lg">HACK</span>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-emerald-400 drop-shadow-[0_0_40px_rgba(99,102,241,0.5)]">
+                <h1 className="text-6xl sm:text-8xl md:text-9xl font-black uppercase tracking-tight select-none flex items-center justify-center">
+                  <span className="text-white drop-shadow-xl">HACK</span>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 via-teal-300 to-cyan-400 text-7xl sm:text-9xl md:text-[11rem] font-black inline-block transform scale-125 ml-2 sm:ml-4 drop-shadow-[0_0_55px_rgba(16,185,129,0.7)] animate-pulse">
                     X
                   </span>
                 </h1>
@@ -283,9 +306,9 @@ export default function LoginPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
-                  className="flex items-center justify-center gap-2 font-mono text-xs sm:text-sm text-indigo-300 tracking-wider uppercase font-semibold"
+                  className="flex items-center justify-center gap-2 font-mono text-xs sm:text-sm text-emerald-300 tracking-wider uppercase font-semibold"
                 >
-                  <Sparkles className="w-4 h-4 text-emerald-400 animate-spin" style={{ animationDuration: "6s" }} />
+                  <Sparkles className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: "6s" }} />
                   <span>Verifiable Evaluation Protocol • Sovereign AI Architecture</span>
                 </motion.div>
               </motion.div>
@@ -302,7 +325,7 @@ export default function LoginPage() {
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
                     transition={{ duration: 4.4, ease: "easeInOut" }}
-                    className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 rounded-full"
+                    className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 rounded-full"
                   />
                 </div>
 
@@ -313,7 +336,7 @@ export default function LoginPage() {
                     {splashStep === 2 && "[ SYNCHRONIZING WITH IMMUTABLE LEDGER ]"}
                     {splashStep >= 3 && "[ SECURE MATRIX READY • WELCOME TO HACKX ]"}
                   </span>
-                  <span className="text-emerald-400">
+                  <span className="text-emerald-400 font-bold">
                     {splashStep >= 3 ? "100% OK" : "SYNCING"}
                   </span>
                 </div>
@@ -328,10 +351,10 @@ export default function LoginPage() {
               >
                 <button
                   onClick={() => setShowSplash(false)}
-                  className="px-6 py-2.5 rounded-full border border-indigo-500/40 bg-indigo-950/60 hover:bg-indigo-900/80 text-xs font-mono text-indigo-200 hover:text-white transition-all flex items-center gap-2 group shadow-lg shadow-indigo-950/50"
+                  className="px-6 py-2.5 rounded-full border border-emerald-500/40 bg-emerald-950/60 hover:bg-emerald-900/80 text-xs font-mono text-emerald-200 hover:text-white transition-all flex items-center gap-2 group shadow-lg shadow-emerald-950/50"
                 >
                   <span>Enter HackX Now</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
                 </button>
               </motion.div>
             </div>
@@ -344,23 +367,41 @@ export default function LoginPage() {
         {/* Top Header with Portal Mark and Return Home Link */}
         <div className="w-full max-w-5xl flex items-center justify-between mb-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-emerald-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="font-black text-xl tracking-tight text-white uppercase">
-                HACK<span className="text-indigo-400">JUDGE</span>
-              </span>
-              <p className="text-[10px] font-mono text-graphite-400">Evaluation Matrix</p>
+              <div className="flex items-center">
+                <span className="font-black text-2xl tracking-tight text-white uppercase flex items-center">
+                  HACK
+                  <span className="text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 via-teal-300 to-cyan-400 text-3xl font-black inline-block transform scale-125 ml-1 drop-shadow-[0_0_20px_rgba(16,185,129,0.7)]">
+                    X
+                  </span>
+                </span>
+              </div>
+              <p className="text-[10px] font-mono text-graphite-400">Evaluation Matrix &amp; Protocol</p>
             </div>
           </Link>
 
           <Link
             href="/"
-            className="text-xs font-mono text-graphite-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5"
+            className="text-xs font-mono text-graphite-400 hover:text-emerald-300 transition-colors flex items-center gap-1.5"
           >
             <span>← Back to Overview</span>
           </Link>
+        </div>
+
+        {/* Hero Title with Big X */}
+        <div className="text-center space-y-2 mb-8">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight uppercase select-none flex items-center justify-center">
+            <span>WELCOME TO HACK</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 via-teal-300 to-cyan-400 text-5xl sm:text-7xl lg:text-8xl font-black inline-block transform scale-125 ml-2 sm:ml-3 drop-shadow-[0_0_35px_rgba(16,185,129,0.7)] animate-pulse">
+              X
+            </span>
+          </h1>
+          <p className="text-xs sm:text-sm text-graphite-300 max-w-xl mx-auto leading-relaxed">
+            Select your role portal to enter the cryptographic hackathon verification ecosystem.
+          </p>
         </div>
 
         {/* 3-WAY ROLE TOGGLE BAR (Participant | Organiser | Judge) */}
@@ -609,6 +650,47 @@ export default function LoginPage() {
                   <span>{error}</span>
                 </div>
               )}
+
+              {/* 1-Click Instant Demo Access Strip */}
+              <div className="p-3 rounded-2xl bg-graphite-950/80 border border-graphite-800 space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-mono">
+                  <span className="text-graphite-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Instant Demo Sign-In:</span>
+                  </span>
+                  <span className="text-emerald-400 font-semibold">1-Click</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDemoSignIn("participant")}
+                    disabled={isLoading}
+                    className="py-1.5 px-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Code2 className="w-3 h-3 text-emerald-400" />
+                    <span>Hacker</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoSignIn("judge")}
+                    disabled={isLoading}
+                    className="py-1.5 px-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-medium transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Gavel className="w-3 h-3 text-amber-400" />
+                    <span>Judge</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoSignIn("organizer")}
+                    disabled={isLoading}
+                    className="py-1.5 px-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-medium transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <ShieldCheck className="w-3 h-3 text-indigo-400" />
+                    <span>Organiser</span>
+                  </button>
+                </div>
+              </div>
 
               {/* Authentication Form */}
               <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">

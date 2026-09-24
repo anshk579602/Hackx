@@ -27,6 +27,7 @@ export default function JudgeDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) return;
     async function load() {
       try {
         const teamList = await api.listTeams();

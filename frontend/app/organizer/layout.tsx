@@ -14,10 +14,16 @@ export default function OrganizerLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login");
+    if (!isLoading) {
+      if (!user) {
+        router.push("/login");
+      } else if (role === "JUDGE") {
+        router.push("/judge/dashboard");
+      } else if (role === "PARTICIPANT") {
+        router.push("/participant/dashboard");
+      }
     }
-  }, [user, isLoading, router]);
+  }, [user, role, isLoading, router]);
 
   if (isLoading) {
     return (

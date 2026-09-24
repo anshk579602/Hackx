@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 import { DecisionReplayData, AuditTimelineEvent } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -26,6 +27,8 @@ import { cn } from "@/lib/utils";
 
 export default function DecisionReplayPage() {
   const params = useParams();
+  const router = useRouter();
+  const { role } = useAuth();
   const evaluationId = params.id as string;
   const [replayData, setReplayData] = useState<DecisionReplayData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,12 +74,21 @@ export default function DecisionReplayPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-graphite-800 pb-6">
         <div>
           <div className="flex items-center gap-3">
-            <Link
-              href="/organizer/evaluations"
-              className="p-1.5 rounded-lg border border-graphite-750 bg-graphite-850 hover:bg-graphite-800 text-graphite-400 hover:text-white transition-colors"
+            <button
+              onClick={() => {
+                if (window.history.length > 1) {
+                  router.back();
+                } else if (role === "JUDGE") {
+                  router.push("/judge/dashboard");
+                } else {
+                  router.push("/organizer/evaluations");
+                }
+              }}
+              className="p-1.5 rounded-lg border border-graphite-750 bg-graphite-850 hover:bg-graphite-800 text-graphite-400 hover:text-white transition-colors cursor-pointer"
+              title="Go Back"
             >
               <ArrowLeft className="w-4 h-4" />
-            </Link>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-white tracking-tight">
